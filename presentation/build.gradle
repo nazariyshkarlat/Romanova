@@ -1,0 +1,81 @@
+import com.tma.romanova.buildsrc.*
+
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id "kotlinx-serialization"
+    id 'kotlin-kapt'
+}
+
+android {
+    compileSdkVersion Configs.CompileSdkVersion
+
+    defaultConfig {
+        minSdkVersion Configs.MinSdkVersion
+        targetSdkVersion Configs.TargetSdkVersion
+        versionCode Configs.VersionCode
+        versionName Configs.VersionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerVersion DependenciesKt.kotlinVersion
+        kotlinCompilerExtensionVersion Compose.composeVersion
+    }
+
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation project(':domain')
+    implementation project(':core')
+
+    implementation Compose.animation
+    implementation Compose.iconsExtended
+    implementation Compose.material
+    implementation Compose.runtime
+    implementation Compose.tooling
+    implementation Compose.ui
+    implementation Compose.uiUtil
+    implementation Compose.activityCompose
+    implementation Compose.navigationCompose
+    implementation Compose.lifecycleViewModelCompose
+    implementation Compose.compiler
+
+    implementation Core.androidXCore
+    implementation Core.appCompat
+    implementation Core.material
+
+    implementation Libs.Accompanist.insets
+    implementation Libs.Accompanist.drawablePainter
+
+    implementation Libs.Koin.core
+    implementation Libs.Koin.android
+    implementation Libs.Koin.androidCompat
+    implementation Libs.Koin.compose
+
+    implementation Libs.Coroutines.android
+
+    implementation Libs.Serialization.json
+
+    androidTestImplementation Compose.uiTest
+}

@@ -77,9 +77,9 @@ fun Player() {
             },
             modifier = Modifier
                 .constrainAs(toolbar) {
-                    top.linkTo(parent.top, margin = LayoutSmallRLPadding)
+                    top.linkTo(parent.top)
                     start.linkTo(parent.start)
-                    end.linkTo(parent.end, margin = LayoutSmallRLPadding)
+                    end.linkTo(parent.end)
                 }
         )
 
@@ -194,10 +194,10 @@ fun Toolbar(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(
-                    start = LayoutSmallRLPadding - 12.dp
+                    end = LayoutSmallRLPadding - 12.dp
                 )
                 .size((24 + 12 * 2).dp),
-            onClick = onBackButtonClick
+            onClick = {TODO()}
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_like),

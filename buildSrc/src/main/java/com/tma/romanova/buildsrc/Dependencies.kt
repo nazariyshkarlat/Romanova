@@ -65,6 +65,11 @@ object Libs {
         const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:$version"
     }
 
+    object ConstraintLayout{
+        private const val version = "1.0.0-beta02"
+        const val constraintLayout = "androidx.constraintlayout:constraintlayout-compose:$version"
+    }
+
     object Coil {
         private const val version = "1.3.2"
 
@@ -100,6 +105,7 @@ object Libs {
     object Accompanist {
         private const val version = "0.17.0"
 
+        const val systemUiController = "com.google.accompanist:accompanist-systemuicontroller:$version"
         const val insets = "com.google.accompanist:accompanist-insets:$version"
         const val drawablePainter = "com.google.accompanist:accompanist-drawablepainter:$version"
     }

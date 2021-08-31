@@ -22,4 +22,11 @@ object NavigationDirections {
             destinationOf("about_author")
     }
 
+    object Player : NavigationCommand(){
+        override val arguments = emptyList<Argument>()
+
+        override val destination: Destination =
+            destinationOf("player")
+    }
+
 }

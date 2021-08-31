@@ -1,7 +1,6 @@
 package com.tma.romanova.presentation.feature.main.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.IndicationInstance
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -30,18 +28,16 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.tma.romanova.core.application
 import com.tma.romanova.domain.action.MainScreenClientAction
-import com.tma.romanova.presentation.extensions.withTint
 import com.tma.romanova.presentation.feature.main.entity.MainScreenTrackItemUi
 import com.tma.romanova.presentation.feature.main.entity.NowPlayingTrackUi
 import com.tma.romanova.presentation.feature.main.state.MainScreenUiState
 import com.tma.romanova.presentation.feature.main.view_model.MainScreenViewModel
 import com.tma.romanova.presentation.theme.*
-import com.tma.romanova.presentation.ui.drawable.CircularProgressDrawable
 
 @Composable
 fun MainScreen(viewModel: MainScreenViewModel){
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -156,8 +152,8 @@ fun AuthorItem(
                 .padding(
                     top = 8.dp,
                     bottom = 8.dp,
-                    start = LayoutRLPadding,
-                    end = LayoutRLPadding
+                    start = LayoutLargeRLPadding,
+                    end = LayoutLargeRLPadding
                 )
                 .fillMaxWidth()
                 .wrapContentHeight(),
@@ -248,8 +244,8 @@ fun AlbumTitle(
         textAlign = TextAlign.Start,
         modifier = modifier
             .padding(
-                start = LayoutRLPadding,
-                end = LayoutRLPadding
+                start = LayoutLargeRLPadding,
+                end = LayoutLargeRLPadding
             )
             .wrapContentSize(),
         text = title,
@@ -269,8 +265,8 @@ fun Podcasts(
             .fillMaxWidth()
             .wrapContentHeight(),
         contentPadding = PaddingValues(
-            start = LayoutRLPadding,
-            end = LayoutRLPadding,
+            start = LayoutLargeRLPadding,
+            end = LayoutLargeRLPadding,
             top = 16.dp,
             bottom = 16.dp
         )
@@ -481,8 +477,8 @@ fun NowPlaying(
         Text(
             modifier = Modifier
                 .padding(
-                    start = LayoutRLPadding,
-                    end = LayoutRLPadding
+                    start = LayoutLargeRLPadding,
+                    end = LayoutLargeRLPadding
                 )
                 .wrapContentSize(),
             text = nowPlaying.nowPlayingTitle,
@@ -502,8 +498,8 @@ fun NowPlaying(
                 .padding(
                     top = 20.dp,
                     bottom = 44.dp,
-                    start = LayoutRLPadding-10.dp,
-                    end = LayoutRLPadding-10.dp
+                    start = LayoutLargeRLPadding-10.dp,
+                    end = LayoutLargeRLPadding-10.dp
                 )
         )
     }

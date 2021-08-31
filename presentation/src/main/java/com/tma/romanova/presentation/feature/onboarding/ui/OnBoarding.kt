@@ -18,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -26,12 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.tma.romanova.domain.navigation.NavigationDirections
-import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.presentation.custom_components.Pager
 import com.tma.romanova.presentation.feature.onboarding.view_model.OnBoardingViewModel
 import com.tma.romanova.presentation.theme.LargeRadius
-import com.tma.romanova.presentation.theme.LayoutRLPadding
 import com.tma.romanova.presentation.theme.appColors
 
 @Composable

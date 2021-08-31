@@ -65,7 +65,10 @@ dependencies {
     implementation Core.appCompat
     implementation Core.material
 
+    implementation Libs.ConstraintLayout.constraintLayout
+
     implementation Libs.Accompanist.insets
+    implementation Libs.Accompanist.systemUiController
     implementation Libs.Accompanist.drawablePainter
 
     implementation Libs.Koin.core

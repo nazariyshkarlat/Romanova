@@ -53,7 +53,7 @@ sealed class MainScreenUiState {
                 AboutAuthorItem(
                     title = R.string.main_screen_about_author_title.str,
                     authorName = R.string.about_author_author_name.str,
-                    authorImage = R.mipmap.author_image.drawable,
+                    authorImage = R.mipmap.author_small.drawable,
                     goToIcon = R.drawable.ic_chevrone_right.drawable
                 )
             }

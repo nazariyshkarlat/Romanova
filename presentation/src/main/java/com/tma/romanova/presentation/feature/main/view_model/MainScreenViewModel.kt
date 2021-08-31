@@ -68,7 +68,11 @@ class MainScreenViewModel(
                     directions = NavigationDirections.AboutAuthor.create()
                 )
             }
-            is MainScreenIntent.GoToPlayerScreen -> Unit
+            is MainScreenIntent.GoToPlayerScreen -> {
+                NavigationManager.navigate(
+                    directions = NavigationDirections.Player.create()
+                )
+            }
             is MainScreenIntent.GoToTrackComments -> Unit
             Intent.DoNothing -> Unit
             MainScreenIntent.LoadPlaylist -> {

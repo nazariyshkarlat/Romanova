@@ -9,9 +9,14 @@ sealed interface GetPlaylistEvent {
 }
 
 fun Result<Playlist>.toGetPlaylistEvent(): GetPlaylistEvent = when(this){
-    is Result.LocalException -> ResponseEvent.Exception
+    is Result.LocalException -> ResponseEvent.Exception(
+        cause = cause
+    )
     is Result.NetworkError -> ResponseEvent.NetworkUnavailable
     is Result.CacheIsEmpty -> GetPlaylistEvent.PlaylistNotFound
-    is Result.ServerError -> ResponseEvent.ServerError
+    is Result.ServerError -> ResponseEvent.ServerError(
+        code = code,
+        message = message
+    )
     is Result.Success -> GetPlaylistEvent.PlaylistFound(playlist = this.data)
 }

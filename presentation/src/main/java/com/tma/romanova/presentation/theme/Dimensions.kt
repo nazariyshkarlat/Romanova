@@ -7,4 +7,4 @@ val MediumRadius = 20F.dp
 val LargeRadius = 40F.dp
 val ExtraLargeRadius = 60F.dp
 
-val LayoutRLPadding = 20F.dp
+val LayoutRLPadding = 40F.dp

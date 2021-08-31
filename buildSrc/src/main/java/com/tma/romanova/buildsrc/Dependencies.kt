@@ -65,6 +65,12 @@ object Libs {
         const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:$version"
     }
 
+    object Coil {
+        private const val version = "1.3.2"
+
+        const val coil = "io.coil-kt:coil-compose:$version"
+    }
+
     object Koin {
         private const val version = "3.1.1"
 

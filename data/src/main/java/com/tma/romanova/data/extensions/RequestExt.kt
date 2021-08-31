@@ -13,10 +13,10 @@ suspend fun <T : Any>(suspend () -> T).handleNetworkRequest(): NetworkResult<T> 
     }catch(cause: Exception){
         cause.printStackTrace()
         when(cause){
-            is ResponseException -> NetworkResult.ServerError(code = cause.response.status.value, cause = cause)
+            is ResponseException -> NetworkResult.ServerError(code = cause.response.status.value, message = cause.message)
             is HttpRequestTimeoutException, is java.net.SocketTimeoutException,
             is UnknownHostException, is SSLException, is EOFException,
-            is ConnectException, is io.ktor.utils.io.CancellationException -> NetworkResult.NetworkError(cause = cause)
+            is ConnectException, is io.ktor.utils.io.CancellationException -> NetworkResult.NetworkError
             else -> NetworkResult.LocalException(cause = cause)
         }
     }

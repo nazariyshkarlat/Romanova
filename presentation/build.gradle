@@ -73,9 +73,13 @@ dependencies {
     implementation Libs.Koin.androidCompat
     implementation Libs.Koin.compose
 
+    implementation Libs.Coil.coil
+
     implementation Libs.Coroutines.android
 
     implementation Libs.Serialization.json
 
     androidTestImplementation Compose.uiTest
+    testImplementation Tests.junit
+    testImplementation Tests.junitKotlin
 }

@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +30,6 @@ import com.tma.romanova.domain.navigation.NavigationDirections
 import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.presentation.custom_components.Pager
 import com.tma.romanova.presentation.feature.onboarding.view_model.OnBoardingViewModel
-import com.tma.romanova.presentation.theme.AppFontFamily
 import com.tma.romanova.presentation.theme.LargeRadius
 import com.tma.romanova.presentation.theme.LayoutRLPadding
 import com.tma.romanova.presentation.theme.appColors
@@ -72,7 +72,7 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                 bottomEnd = LargeRadius
             ),
             color = MaterialTheme.appColors.background,
-            elevation = 20.dp,
+            elevation = 12.dp,
         ) {
             Column(
                 modifier = Modifier
@@ -89,6 +89,7 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                     orientation = Orientation.Horizontal,
                     onItemSelect = {
                         viewModel.notifyItemSelected(it)
+                        newSelectedIndex = viewModel.currentIndex
                     },
                     overshootFraction = .2F,
                     newSelectedIndex = newSelectedIndex,
@@ -96,16 +97,16 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                     contentFactory = { item: OnBoardingViewModel.OnBoardingUi ->
                         Column(
                             modifier = Modifier
-                                .padding(
-                                    start = LayoutRLPadding,
-                                    end = LayoutRLPadding
-                                )
                                 .fillMaxWidth()
                                 .wrapContentHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Image(
                                 modifier = Modifier
+                                    .padding(
+                                        start = 18.dp,
+                                        end = 18.dp
+                                    )
                                     .fillMaxWidth()
                                     .wrapContentHeight(),
                                 painter = rememberDrawablePainter(
@@ -117,7 +118,7 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                                 style = TextStyle(
                                     color = MaterialTheme.appColors.onBackground,
                                     fontSize = 38.sp,
-                                    fontFamily = AppFontFamily,
+
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Bold
                                 ),
@@ -125,8 +126,8 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                                 modifier = Modifier
                                     .padding(
                                         top = 10.dp,
-                                        start = 20.dp,
-                                        end = 20.dp
+                                        start = 40.dp,
+                                        end = 40.dp
                                     )
                                     .wrapContentHeight()
                                     .fillMaxWidth(),
@@ -191,7 +192,7 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                             style = TextStyle(
                                 color = MaterialTheme.appColors.onBackground,
                                 fontSize = 16.sp,
-                                fontFamily = AppFontFamily,
+
                                 fontStyle = FontStyle.Normal,
                                 fontWeight = FontWeight.Medium
                             ),
@@ -226,7 +227,7 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                 style = TextStyle(
                     color = MaterialTheme.appColors.onSurface,
                     fontSize = 14.sp,
-                    fontFamily = AppFontFamily,
+
                     fontStyle = FontStyle.Normal,
                     fontWeight = FontWeight.Normal
                 ),

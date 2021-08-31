@@ -19,6 +19,7 @@ import com.tma.romanova.domain.navigation.NavigationDirections
 import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.domain.navigation.NavigationManager.startDirection
 import com.tma.romanova.presentation.extensions.EnterAnimation
+import com.tma.romanova.presentation.feature.about_author.AboutAuthor
 import com.tma.romanova.presentation.feature.main.ui.MainScreen
 import com.tma.romanova.presentation.feature.main.view_model.MainScreenViewModel
 import com.tma.romanova.presentation.feature.onboarding.ui.OnBoarding
@@ -43,10 +44,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun App(){
 
-        Box(modifier = Modifier
-            .statusBarsPadding()
-            .navigationBarsPadding()
-        ) {
+        Box(modifier = Modifier) {
             val navController = rememberNavController()
 
             LaunchedEffect(true) {
@@ -78,6 +76,13 @@ class MainActivity : ComponentActivity() {
                         MainScreen(viewModel = viewModel)
                     }
                 }
+
+                composable(NavigationDirections.AboutAuthor.route){ backStackEntry ->
+                    EnterAnimation {
+                        AboutAuthor()
+                    }
+                }
+
             }
         }
     }

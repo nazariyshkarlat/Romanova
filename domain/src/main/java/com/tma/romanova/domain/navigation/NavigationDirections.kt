@@ -15,4 +15,11 @@ object NavigationDirections {
             destinationOf("main_screen")
     }
 
+    object AboutAuthor : NavigationCommand() {
+        override val arguments = emptyList<Argument>()
+
+        override val destination: Destination =
+            destinationOf("about_author")
+    }
+
 }

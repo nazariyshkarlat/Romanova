@@ -25,7 +25,8 @@ private val LightColorPalette = AppColors(
         onSecondary = white,
         onBackground = black,
         onSurface = gray
-    )
+    ),
+    accent = blue
 )
 
 private val DarkColorPalette = AppColors(
@@ -38,7 +39,8 @@ private val DarkColorPalette = AppColors(
         onSecondary = white,
         onBackground = black,
         onSurface = gray
-    )
+    ),
+    accent = blue
 )
 
 val MaterialTheme.appColors: AppColors

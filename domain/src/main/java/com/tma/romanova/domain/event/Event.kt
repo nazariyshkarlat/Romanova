@@ -1,5 +1,5 @@
 package com.tma.romanova.domain.event
 
-sealed class Event {
+sealed class Event : MainScreenClientEvent, MainScreenEvent {
     object DoNothing : Event()
 }

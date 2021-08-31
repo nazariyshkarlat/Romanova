@@ -1,5 +1,5 @@
 package com.tma.romanova.domain.intent
 
-sealed class Intent {
+sealed class Intent : MainScreenIntent {
     object DoNothing: Intent()
 }

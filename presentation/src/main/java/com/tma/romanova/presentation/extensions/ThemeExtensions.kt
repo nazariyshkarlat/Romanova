@@ -5,7 +5,8 @@ import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
 data class AppColors(
-    val material: Colors
+    val material: Colors,
+    val accent: Color
 ) {
     val primary: Color get() = material.primary
     val primaryVariant: Color get() = material.primaryVariant

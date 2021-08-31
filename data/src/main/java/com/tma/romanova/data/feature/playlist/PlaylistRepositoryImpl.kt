@@ -5,7 +5,7 @@ import com.tma.romanova.data.data_source.DataSourceProvider
 import com.tma.romanova.data.data_source.network.toResult
 import com.tma.romanova.data.feature.playlist.data_source.get_playlist.api.GetPlaylistNetworkRequest
 import com.tma.romanova.data.feature.playlist.entity.PlaylistEntity
-import com.tma.romanova.data.feature.playlist.entity.toDomain
+import com.tma.romanova.data.feature.playlist.entity.domain
 import com.tma.romanova.domain.feature.playlist.PlaylistRepository
 import com.tma.romanova.domain.feature.playlist.entity.Playlist
 import com.tma.romanova.domain.result.DataSourceType
@@ -27,7 +27,7 @@ class PlaylistRepositoryImpl(
             DataSourceType.Network -> playlistDataSource.getFromServer(
                 GetPlaylistNetworkRequest(httpClient = httpClient)
             ).toResult {
-                it.toDomain()
+                it.domain
             }
             DataSourceType.Memory -> {
                 throw UnsupportedOperationException()

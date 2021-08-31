@@ -5,14 +5,19 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 data class Playlist(
-    val tracks: List<Track>
+    val tracks: List<Track>,
+    val title: String
 )
 
 data class Track(
-    val artworkUrl: String,
+    val largeArtworkUrl: String,
+    val smallArtworkUrl: String,
     val waveformUrl: String,
-    val id: Long,
+    val id: Int,
     val createdAt: Date,
-    val duration: Long,
-    val title: String
+    val duration: Int,
+    val title: String,
+    val isLiked: Boolean = false,
+    val likesCount: Int = 12,
+    val commentsCount: Int = 4
 )

@@ -1,6 +1,7 @@
 package com.tma.romanova.data.feature.playlist.entity
 
 import android.icu.text.SimpleDateFormat
+import com.tma.romanova.data.BuildConfig
 import com.tma.romanova.data.feature.playlist.entity.TrackEntity.Companion.date
 import com.tma.romanova.domain.feature.playlist.entity.Playlist
 import com.tma.romanova.domain.feature.playlist.entity.Track
@@ -22,6 +23,8 @@ data class TrackEntity(
     val artworkUrl: String,
     @SerialName("waveform_url")
     val waveformUrl: String,
+    @SerialName("stream_url")
+    val streamUrl: String,
     @SerialName("id")
     val id: Int,
     @SerialName("created_at")
@@ -52,5 +55,6 @@ get() = Track(
     id = id,
     createdAt = createdAt.date,
     duration = duration,
-    title = title
+    title = title,
+    streamUrl = "$streamUrl?client_id=${BuildConfig.CLIENT_ID}"
 )

@@ -8,7 +8,8 @@ sealed interface GetPlaylistEvent {
     object PlaylistNotFound : GetPlaylistEvent
 }
 
-fun Result<Playlist>.toGetPlaylistEvent(): GetPlaylistEvent = when(this){
+val Result<Playlist>.getPlaylistEvent
+get(): GetPlaylistEvent = when(this){
     is Result.LocalException -> ResponseEvent.Exception(
         cause = cause
     )

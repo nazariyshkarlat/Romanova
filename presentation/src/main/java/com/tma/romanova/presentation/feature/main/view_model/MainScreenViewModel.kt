@@ -11,17 +11,15 @@ import com.tma.romanova.domain.event.mainScreenEvent
 import com.tma.romanova.domain.feature.playlist.use_case.GetPlaylist
 import com.tma.romanova.domain.intent.Intent
 import com.tma.romanova.domain.intent.MainScreenIntent
-import com.tma.romanova.domain.state.MainScreenState
-import com.tma.romanova.domain.state.reducer.MainScreenReducer
-import com.tma.romanova.presentation.R
-import com.tma.romanova.presentation.extensions.drawable
+import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
+import com.tma.romanova.domain.state.feature.main_screen.reducer.MainScreenReducer
 import com.tma.romanova.presentation.extensions.launchWithCancelInMain
-import com.tma.romanova.presentation.feature.main.entity.NowPlayingTrackUi
 import com.tma.romanova.presentation.feature.main.state.MainScreenUiState
 import com.tma.romanova.presentation.feature.main.state.ui
 import kotlinx.coroutines.Job
 import com.tma.romanova.domain.feature.playlist.entity.Track
 import com.tma.romanova.domain.navigation.NavigationDirections
+import com.tma.romanova.domain.navigation.NavigationDirections.Player.Arguments.TRACK_ID
 import com.tma.romanova.domain.navigation.NavigationManager
 import kotlinx.coroutines.flow.collect
 import java.util.*
@@ -40,6 +38,7 @@ class MainScreenViewModel(
                 duration = 12341,
                 title = "Вечеринка",
                 id = 950640094,
+                streamUrl = "https://api.soundcloud.com/tracks/950640094/stream"
             )
         )
     ),
@@ -69,9 +68,15 @@ class MainScreenViewModel(
                 )
             }
             is MainScreenIntent.GoToPlayerScreen -> {
-                NavigationManager.navigate(
-                    directions = NavigationDirections.Player.create()
-                )
+                state.value.tracks?.find { it == intent.track }?.let {
+                    NavigationManager.navigate(
+                        directions = NavigationDirections.Player.create(
+                            mapOf(
+                                TRACK_ID to it.id
+                            )
+                        )
+                    )
+                }
             }
             is MainScreenIntent.GoToTrackComments -> Unit
             Intent.DoNothing -> Unit

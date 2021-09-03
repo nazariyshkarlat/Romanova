@@ -87,14 +87,13 @@ fun AboutAuthor(){
 
         Divider(
             modifier = Modifier
-                .height(1.dp)
+                .height(0.dp)
                 .constrainAs(guideline) {
                     top.linkTo(authorInfo.top)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                     bottom.linkTo(authorInfo.bottom)
-                },
-            color = Color.Red
+                }
         )
 
         AuthorInfo(

@@ -417,7 +417,7 @@ fun PodcastItem(
                             ),
                             text = podcastTrackItemUi.likesText,
                             style = TextStyle(
-                                color = if(podcastTrackItemUi.isLiked) MaterialTheme.appColors.onBackground
+                                color = if(podcastTrackItemUi.isOnPrimaryLikesTextColor) MaterialTheme.appColors.onBackground
                                     else MaterialTheme.appColors.onPrimary,
                                 fontSize = 6.sp,
                                 fontStyle = FontStyle.Normal,

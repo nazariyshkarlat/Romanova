@@ -1,4 +1,4 @@
-package com.tma.romanova.domain.state
+package com.tma.romanova.domain.state.base
 
 import com.tma.romanova.domain.result.ErrorCause
 

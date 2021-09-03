@@ -13,7 +13,7 @@ abstract class NavigationCommand {
     companion object {
         fun argumentOf(name: String, isOptional: Boolean, navType: NavType) = Argument(name, isOptional, navType)
 
-        fun destinationOf(name: String, arguments: List<Argument> = emptyList()) = Destination(name, arguments)
+        fun NavigationCommand.destinationOf(name: String) = Destination(name, arguments)
     }
 
 
@@ -24,6 +24,7 @@ abstract class NavigationCommand {
             append(name)
             append(formRequiredRoutePart())
             append(formOptionalRoutePart())
+            println(formRequiredRoutePart())
         }
 
         private fun formRequiredArgument(name: String) = "/{${name}}"

@@ -1,7 +1,6 @@
 package com.tma.romanova.presentation.feature.main.entity
 
 import android.graphics.drawable.Drawable
-import androidx.appcompat.content.res.AppCompatResources
 import com.tma.romanova.core.application
 import com.tma.romanova.domain.feature.playlist.entity.Track
 import com.tma.romanova.presentation.R
@@ -17,7 +16,7 @@ data class MainScreenTrackItemUi(
     val likeButtonIcon: Drawable,
     val likesText: String,
     val commentsText: String,
-    val isLiked: Boolean
+    val isOnPrimaryLikesTextColor: Boolean
 ){
     val commentButtonIcon: Drawable by lazy {
         R.drawable.ic_comment.drawable
@@ -48,7 +47,7 @@ get() = MainScreenTrackItemUi(
     else R.drawable.ic_like.drawable,
     commentsText = commentsCount.toString(),
     likesText = likesCount.toString(),
-    isLiked = isLiked
+    isOnPrimaryLikesTextColor = isLiked
 )
 
 fun Track.toNowPlayingTrackUi(isOnPause: Boolean) = NowPlayingTrackUi(
@@ -62,14 +61,16 @@ fun Track.toNowPlayingTrackUi(isOnPause: Boolean) = NowPlayingTrackUi(
 data class Duration(
     val hours: Int,
     val minutes: Int,
-    val seconds: Int
+    val seconds: Int,
+    val milliseconds: Int = 0
 )
 
 val Int.duration
 get() = Duration(
     seconds = (this/1000)%60,
     minutes = (this/(1000*60))%60,
-    hours = (this/(1000*60*60))
+    hours = (this/(1000*60*60)),
+    milliseconds = (this)%1000
 )
 
 val Int.durationStr

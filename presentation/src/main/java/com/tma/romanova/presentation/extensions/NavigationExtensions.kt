@@ -1,11 +1,34 @@
 package com.tma.romanova.presentation.extensions
 
+import android.os.Bundle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.navArgument
 import com.tma.romanova.domain.navigation.NavigationCommand
+import kotlinx.serialization.builtins.IntArraySerializer
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
-inline fun <reified T>NavBackStackEntry.getArgument(name: String) = this.arguments!!.get(name) as T
+fun NavBackStackEntry.getArgument(
+    name: String,
+    type: NavigationCommand.NavType
+): Any = this.arguments!!.get(name, type)
+
+fun Bundle.get(
+    name: String,
+    navType: NavigationCommand.NavType): Any =
+        when(navType){
+            NavigationCommand.NavType.Int -> this.getInt(name)
+            NavigationCommand.NavType.IntArray -> this.getIntArray(name)!!
+            NavigationCommand.NavType.Long -> this.getLong(name)
+            NavigationCommand.NavType.LongArray -> this.getLongArray(name)!!
+            NavigationCommand.NavType.Float -> this.getFloat(name)
+            NavigationCommand.NavType.FloatArray -> this.getFloatArray(name)!!
+            NavigationCommand.NavType.Bool -> this.getBoolean(name)
+            NavigationCommand.NavType.BoolArray -> this.getBooleanArray(name)!!
+            NavigationCommand.NavType.String -> this.getString(name)!!
+            NavigationCommand.NavType.StringArray -> this.getStringArray(name)!!
+        }
 
 val NavigationCommand.navArguments
     get() = arguments.map {

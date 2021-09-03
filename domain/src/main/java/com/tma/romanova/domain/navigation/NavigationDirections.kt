@@ -1,5 +1,7 @@
 package com.tma.romanova.domain.navigation
 
+import com.tma.romanova.domain.navigation.NavigationDirections.Player.Arguments.TRACK_ID
+
 object NavigationDirections {
     object OnBoarding : NavigationCommand() {
         override val arguments = emptyList<Argument>()
@@ -23,7 +25,13 @@ object NavigationDirections {
     }
 
     object Player : NavigationCommand(){
-        override val arguments = emptyList<Argument>()
+        object Arguments{
+            const val TRACK_ID = "track_id"
+        }
+
+        override val arguments = listOf(
+            argumentOf(TRACK_ID, isOptional = false, navType = NavType.Int)
+        )
 
         override val destination: Destination =
             destinationOf("player")

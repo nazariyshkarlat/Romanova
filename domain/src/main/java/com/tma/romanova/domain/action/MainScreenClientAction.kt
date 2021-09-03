@@ -2,7 +2,7 @@ package com.tma.romanova.domain.action
 
 import com.tma.romanova.domain.intent.Intent
 import com.tma.romanova.domain.intent.MainScreenIntent
-import com.tma.romanova.domain.state.MainScreenState
+import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
 
 sealed class MainScreenClientAction {
     object AboutAuthorItemClick : MainScreenClientAction()

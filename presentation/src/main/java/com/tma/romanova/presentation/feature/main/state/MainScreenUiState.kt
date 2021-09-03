@@ -1,7 +1,7 @@
 package com.tma.romanova.presentation.feature.main.state
 
 import android.graphics.drawable.Drawable
-import com.tma.romanova.domain.state.MainScreenState
+import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
 import com.tma.romanova.presentation.R
 import com.tma.romanova.presentation.extensions.drawable
 import com.tma.romanova.presentation.extensions.str
@@ -14,7 +14,10 @@ import com.tma.romanova.presentation.feature.main.entity.toNowPlayingTrackUi
 sealed class MainScreenUiState {
 
     abstract val nowPlayingState: NowPlayingUiState
-    val aboutAuthorItem: AboutAuthorItem by lazy {AboutAuthorItem.aboutAuthor}
+
+    companion object {
+        val aboutAuthorItem: AboutAuthorItem by lazy { AboutAuthorItem.aboutAuthor }
+    }
 
     data class PlaylistIsLoading(
         override val nowPlayingState: NowPlayingUiState

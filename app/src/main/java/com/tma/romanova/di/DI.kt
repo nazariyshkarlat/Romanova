@@ -5,6 +5,7 @@ import com.tma.romanova.core.putApplication
 import com.tma.romanova.core.putMetadata
 import com.tma.romanova.di.feature.mainScreenModule
 import com.tma.romanova.di.feature.onBoardingModule
+import com.tma.romanova.di.feature.playerModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext
@@ -21,7 +22,8 @@ object DI{
                 networkModule,
                 preferencesModule,
                 onBoardingModule,
-                mainScreenModule
+                mainScreenModule,
+                playerModule
             )
         }
         putMetadata(GlobalContext.get().get())

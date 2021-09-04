@@ -53,7 +53,7 @@ fun MainScreen(viewModel: MainScreenViewModel){
 
         AuthorItem(
             onClick = onAboutAuthorClick,
-            aboutAuthorItem = state.aboutAuthorItem,
+            aboutAuthorItem = MainScreenUiState.aboutAuthorItem,
             modifier = Modifier.padding(
                 top = 14.dp
             )

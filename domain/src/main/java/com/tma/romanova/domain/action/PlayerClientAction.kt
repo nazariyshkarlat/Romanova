@@ -25,6 +25,7 @@ fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
         when(playerState){
             PlayerState.Loading -> Intent.DoNothing
             is PlayerState.TrackIsPlaying -> {
+                println(playerState.track.playingState)
                 when(playerState.track.playingState){
                     PlayingState.IsNotPlaying -> Intent.DoNothing
                     is PlayingState.IsOnPause -> PlayerIntent.ResumeTrack
@@ -42,5 +43,7 @@ fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
             }
         }
     }
+    PlayerClientAction.TimeUpClick -> PlayerIntent.UpPlayingTime
+    PlayerClientAction.TimeBackClick -> PlayerIntent.DownPlayingTime
     else -> Intent.DoNothing
 }

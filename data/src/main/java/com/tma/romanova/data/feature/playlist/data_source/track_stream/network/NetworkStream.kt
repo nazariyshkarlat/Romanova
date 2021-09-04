@@ -6,6 +6,7 @@ import com.tma.romanova.data.BuildConfig
 import com.tma.romanova.data.feature.playlist.data_source.track_stream.Stream
 import com.tma.romanova.domain.result.DataSourceType
 import com.tma.romanova.domain.result.Result
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -17,21 +18,23 @@ class NetworkStream(
     ): Stream {
     private var mediaPlayer: MediaPlayer? = null
 
+    private var channelScope: ProducerScope<Int>? = null
     override val currentPlayMsTimeFlow: Flow<Int>
     get() = callbackFlow{
-        while (true){
-            println("111")
-            kotlinx.coroutines.delay(100)
-            val mediaPlayer = mediaPlayer
-            if(mediaPlayer != null){
-                trySend(
-                    mediaPlayer.currentPosition
-                )
-            } else{
-                println("close")
-                close()
-                break
+        channelScope = this
+        while (true) {
+            if (mediaPlayer?.isPlaying == true) {
+                kotlinx.coroutines.delay(100)
+                val mediaPlayer = mediaPlayer
+                if (mediaPlayer != null) {
+                    trySend(
+                        mediaPlayer.currentPosition
+                    )
+                } else {
+                    close()
+                    break
 
+                }
             }
         }
         awaitClose{
@@ -137,6 +140,9 @@ class NetworkStream(
             try {
                 it!!.seekTo(ms)
                 it.setOnSeekCompleteListener {
+                    channelScope?.trySend(
+                        ms
+                    )
                     trySend(
                         Result.Success(
                             dataSourceType = DataSourceType.Network,

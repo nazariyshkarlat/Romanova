@@ -23,9 +23,9 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField "String", "BASE_URL", '"https://api.soundcloud.com"'
-        buildConfigField "String", "USER_ID", '"922430254"'
+        buildConfigField "String", "USER_ID", '"1025550217"'
         buildConfigField "String", "CLIENT_ID", '"8538a1744a7fdaa59981232897501e04"'
-        buildConfigField "String", "PLAYLIST_ID", '"1181127556"'
+        buildConfigField "String", "PLAYLIST_ID", '"1310117251"'
     }
 
     buildTypes {

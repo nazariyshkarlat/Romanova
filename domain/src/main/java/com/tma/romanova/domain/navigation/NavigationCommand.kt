@@ -24,7 +24,6 @@ abstract class NavigationCommand {
             append(name)
             append(formRequiredRoutePart())
             append(formOptionalRoutePart())
-            println(formRequiredRoutePart())
         }
 
         private fun formRequiredArgument(name: String) = "/{${name}}"

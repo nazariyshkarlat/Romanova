@@ -196,7 +196,6 @@ private class PagerState {
     suspend fun animateTo(index: Int){
         val targetOffset = (index * (itemDimension + itemSpacing) * (index-currentIndex).sign)
             .coerceIn(0f, (numberOfItems - 1).toFloat() * (itemDimension + itemSpacing))
-        println(targetOffset)
         dragOffset.animateTo(
             animationSpec = animationSpec,
             targetValue = targetOffset

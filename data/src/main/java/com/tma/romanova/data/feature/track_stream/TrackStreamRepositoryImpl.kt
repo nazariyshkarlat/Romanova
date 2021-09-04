@@ -24,7 +24,6 @@ class TrackStreamRepositoryImpl(
             dataSource.stream.prepareAudio().onEach {
                 if(withPlaying) {
                     if(it is Result.Success) {
-                        println("collect")
                         playTrack().collect {
 
                         }

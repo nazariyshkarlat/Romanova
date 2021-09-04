@@ -10,15 +10,17 @@ sealed interface GetTrackEvent {
 }
 
 val Result<Track>.getTrackEvent
-    get(): GetTrackEvent = when(this){
-        is Result.LocalException -> ResponseEvent.Exception(
-            cause = cause
-        )
-        is Result.NetworkError -> ResponseEvent.NetworkUnavailable
-        is Result.CacheIsEmpty -> GetTrackEvent.TrackNotFound
-        is Result.ServerError -> ResponseEvent.ServerError(
-            code = code,
-            message = message
-        )
-        is Result.Success -> GetTrackEvent.TrackFound(track = this.data)
+    get(): GetTrackEvent {
+        return when(this){
+            is Result.LocalException -> ResponseEvent.Exception(
+                cause = cause
+            )
+            is Result.NetworkError -> ResponseEvent.NetworkUnavailable
+            is Result.CacheIsEmpty -> GetTrackEvent.TrackNotFound
+            is Result.ServerError -> ResponseEvent.ServerError(
+                code = code,
+                message = message
+            )
+            is Result.Success -> GetTrackEvent.TrackFound(track = this.data)
+        }
     }

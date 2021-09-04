@@ -10,7 +10,20 @@ import com.tma.romanova.domain.state.feature.player.PlayerState
 fun PlayerReducer() =
     Reducer<PlayerState, PlayerIntent> { currentState, intent ->
         when (currentState) {
-            PlayerState.Loading -> currentState
+            PlayerState.Loading -> {
+                when(intent){
+                    is PlayerIntent.ShowTrack -> {
+                        PlayerState.TrackIsPlaying(
+                            track = intent.track
+                        )
+                    }
+                    is PlayerIntent.ShowPageLoadingError -> {
+                        //TODO
+                        currentState
+                    }
+                    else -> currentState
+                }
+            }
             is PlayerState.TrackIsPlaying -> {
                 when (intent) {
                     is PlayerIntent.ChangePosition -> {
@@ -42,10 +55,10 @@ fun PlayerReducer() =
                         track = currentState.track.copy(
                             playingState = when (currentState.track.playingState) {
                                 PlayingState.IsNotPlaying -> currentState.track.playingState
-                                is PlayingState.IsOnPause -> PlayingState.IsOnPause(
+                                is PlayingState.IsOnPause -> currentState.track.playingState
+                                is PlayingState.IsPlaying -> PlayingState.IsOnPause(
                                     currentPositionMs = currentState.track.playingState.currentPositionMs
                                 )
-                                is PlayingState.IsPlaying -> currentState.track.playingState
                             }
                         )
                     )

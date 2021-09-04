@@ -42,6 +42,9 @@ class PlayerViewModel(
     }
 
     init {
+        consumeInternalEvent(
+            internalEvent = PlayerEvent.PageOpen
+        )
         viewModelScope.launch(Dispatchers.IO) {
             trackStreamInteractor.prepareTrack(
                 trackId = trackId,
@@ -62,6 +65,7 @@ class PlayerViewModel(
     }
 
     override fun consumeIntent(intent: PlayerIntent) {
+        println(intent)
         when(intent){
             is PlayerIntent.ChangePosition -> {
 
@@ -76,6 +80,7 @@ class PlayerViewModel(
             is PlayerIntent.ShowTrack -> {
                 prepareTrackAndPlay(trackId = trackId)
             }
+
             is PlayerIntent.NavigateToNextTrack -> TODO()
             is PlayerIntent.NavigateToPreviousTrack -> TODO()
             PlayerIntent.PauseTrack -> {
@@ -83,6 +88,12 @@ class PlayerViewModel(
             }
             PlayerIntent.ResumeTrack -> {
                 resumeTrack()
+            }
+            PlayerIntent.UpPlayingTime ->{
+                upPlayingTime()
+            }
+            PlayerIntent.DownPlayingTime -> {
+                downPlayingTime()
             }
             else -> Unit
         }
@@ -125,6 +136,22 @@ class PlayerViewModel(
     private fun resumeTrack(){
         viewModelScope.launch(Dispatchers.IO) {
             trackStreamInteractor.playTrack().collect {
+
+            }
+        }
+    }
+
+    private fun upPlayingTime(){
+        viewModelScope.launch(Dispatchers.IO) {
+            trackStreamInteractor.moveTimeUp().collect {
+
+            }
+        }
+    }
+
+    private fun downPlayingTime(){
+        viewModelScope.launch(Dispatchers.IO) {
+            trackStreamInteractor.moveTimeBack().collect {
 
             }
         }

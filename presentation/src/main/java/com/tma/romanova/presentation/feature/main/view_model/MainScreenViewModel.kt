@@ -18,14 +18,17 @@ import com.tma.romanova.presentation.feature.main.state.MainScreenUiState
 import com.tma.romanova.presentation.feature.main.state.ui
 import kotlinx.coroutines.Job
 import com.tma.romanova.domain.feature.playlist.entity.Track
+import com.tma.romanova.domain.feature.playlist.use_case.TrackInteractor
 import com.tma.romanova.domain.navigation.NavigationDirections
 import com.tma.romanova.domain.navigation.NavigationDirections.Player.Arguments.TRACK_ID
 import com.tma.romanova.domain.navigation.NavigationManager
+import com.tma.romanova.presentation.extensions.launchImmediately
 import kotlinx.coroutines.flow.collect
 import java.util.*
 
 class MainScreenViewModel(
-    private val getPlaylist: GetPlaylist
+    private val getPlaylist: GetPlaylist,
+    private val trackInteractor: TrackInteractor
 ): BaseViewModel(
     initialState = MainScreenState.PlaylistIsLoading(
         nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
@@ -69,6 +72,11 @@ class MainScreenViewModel(
             }
             is MainScreenIntent.GoToPlayerScreen -> {
                 state.value.tracks?.find { it == intent.track }?.let {
+                    viewModelScope.launchImmediately {
+                        trackInteractor.saveTrack(
+                            track = it
+                        )
+                    }
                     NavigationManager.navigate(
                         directions = NavigationDirections.Player.create(
                             mapOf(

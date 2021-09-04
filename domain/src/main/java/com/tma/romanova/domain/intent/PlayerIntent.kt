@@ -27,4 +27,6 @@ sealed interface PlayerIntent {
         val track: Track
     ) : PlayerIntent
     object LoadTrack: PlayerIntent
+    object UpPlayingTime: PlayerIntent
+    object DownPlayingTime: PlayerIntent
 }

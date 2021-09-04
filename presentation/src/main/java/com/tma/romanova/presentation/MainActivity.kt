@@ -17,10 +17,7 @@ import com.tma.romanova.domain.navigation.NavigationDirections
 import com.tma.romanova.domain.navigation.NavigationDirections.Player.Arguments.TRACK_ID
 import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.domain.navigation.NavigationManager.startDirection
-import com.tma.romanova.presentation.extensions.DarkStatusBar
-import com.tma.romanova.presentation.extensions.EnterAnimation
-import com.tma.romanova.presentation.extensions.LightStatusBar
-import com.tma.romanova.presentation.extensions.getArgument
+import com.tma.romanova.presentation.extensions.*
 import com.tma.romanova.presentation.feature.about_author.AboutAuthor
 import com.tma.romanova.presentation.feature.main.ui.MainScreen
 import com.tma.romanova.presentation.feature.main.view_model.MainScreenViewModel
@@ -93,7 +90,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                composable(NavigationDirections.Player.route){ backStackEntry ->
+                composable(
+                    route = NavigationDirections.Player.route,
+                    arguments = NavigationDirections.Player.navArguments
+                ){ backStackEntry ->
                     DarkStatusBar()
 
                     EnterAnimation {
@@ -106,9 +106,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                         }
-                        Player(
-                            playerViewModel = viewModel
-                        )
+                        Player(viewModel = viewModel)
                     }
                 }
 

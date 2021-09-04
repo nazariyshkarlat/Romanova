@@ -12,7 +12,9 @@ import kotlinx.serialization.json.Json
 fun NavBackStackEntry.getArgument(
     name: String,
     type: NavigationCommand.NavType
-): Any = this.arguments!!.get(name, type)
+): Any {
+    return this.arguments!!.get(name, type)
+}
 
 fun Bundle.get(
     name: String,

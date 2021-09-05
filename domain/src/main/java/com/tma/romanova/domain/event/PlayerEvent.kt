@@ -17,6 +17,10 @@ sealed interface PlayerEvent {
     data class NeedsChangeTimeLinePosition(
         val newPositionMs: Int
     ): PlayerEvent
+    object WaveFormLoadingError: PlayerEvent
+    data class WaveFormValuesReceived(
+        val values: List<Float>
+        ): PlayerEvent
 }
 
 val PlayerEvent.intent
@@ -29,7 +33,24 @@ val PlayerEvent.intent
         is PlayerEvent.NeedsChangeTimeLinePosition -> PlayerIntent.ChangePosition(
             newPositionMs = newPositionMs
         )
+        PlayerEvent.WaveFormLoadingError -> PlayerIntent.ShowWaveFormLoadingError
+        is PlayerEvent.WaveFormValuesReceived -> PlayerIntent.ShowWaveForm(
+            values = values
+        )
     }
+
+val GetWaveFormEvent.playerEvent: PlayerEvent
+get() = when(this){
+    GetWaveFormEvent.Error -> PlayerEvent.WaveFormLoadingError
+    ResponseEvent.DoNothing ->  Event.DoNothing
+    is ResponseEvent.Exception -> PlayerEvent.WaveFormLoadingError
+    ResponseEvent.Loading -> Event.DoNothing
+    ResponseEvent.NetworkUnavailable -> PlayerEvent.WaveFormLoadingError
+    is ResponseEvent.ServerError -> PlayerEvent.WaveFormLoadingError
+    is GetWaveFormEvent.ValuesReceived -> PlayerEvent.WaveFormValuesReceived(
+        values = values
+    )
+}
 
 val GetTrackEvent.playerEvent: PlayerEvent
     get() = when(this){

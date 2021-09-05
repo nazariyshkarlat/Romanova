@@ -8,4 +8,5 @@ interface PlaylistRepository {
     suspend fun getPlaylist(): Result<Playlist>
     suspend fun getTrack(trackId: Int): Result<Track>
     suspend fun saveTrack(track: Track)
+    suspend fun getWaveFormValues(url: String, partsCount: Int): Result<List<Float>>
 }

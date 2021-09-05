@@ -28,7 +28,8 @@ import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.tma.romanova.domain.action.PlayerClientAction
-import com.tma.romanova.domain.navigation.NavigationManager
+import com.tma.romanova.domain.state.feature.player.WaveFormValuesStatus
+import com.tma.romanova.presentation.extensions.toRgb
 import com.tma.romanova.presentation.feature.player.state.PlayerUiState
 import com.tma.romanova.presentation.feature.player.view_model.PlayerViewModel
 import com.tma.romanova.presentation.theme.ExtraLargeRadius
@@ -48,6 +49,14 @@ fun Player(
         val onLikeButtonClick = {
             viewModel.consumeClientAction(
                 action = PlayerClientAction.LikeClick
+            )
+        }
+
+        val onRectanglesCountMeasured: (Int) -> Unit = { rectCount ->
+            viewModel.consumeClientAction(
+                action = PlayerClientAction.WaveFormPartsCountMeasured(
+                    partsCount = rectCount
+                )
             )
         }
 
@@ -176,7 +185,10 @@ fun Player(
                             start.linkTo(parent.start, margin = LayoutLargeRLPadding)
                             end.linkTo(parent.end, margin = LayoutLargeRLPadding)
                             width = Dimension.fillToConstraints
-                        }
+                        },
+                    onRectanglesCountMeasured = onRectanglesCountMeasured,
+                    values = (state.waveFormValuesStatus as? WaveFormValuesStatus.ValuesReceived)?.values ?: emptyList(),
+                    filledPercent = state.playedPercent
                 )
 
                 Duration(
@@ -507,14 +519,26 @@ fun Duration(
 
 @Composable
 fun WaveForm(
-    modifier: Modifier
+    modifier: Modifier,
+    values: List<Float>,
+    filledPercent: Float,
+    onRectanglesCountMeasured: (Int) -> Unit
 ){
-    Box(
-        modifier
+    WaveForm(
+        modifier = modifier
             .fillMaxWidth()
-            .height(52.dp)
-            .background(
-                color = MaterialTheme.appColors.primary
-            )
+            .height(52.dp),
+        values = values,
+        waveFormStyle = WaveFormStyle(
+            unfilledColor = MaterialTheme.appColors.surface.toRgb(
+                backgroundColor = MaterialTheme.appColors.background
+            ),
+            filledColor = MaterialTheme.appColors.primary,
+            rectanglesCornerRadius = ExtraLargeRadius,
+            rectanglesPadding = 3.dp,
+            rectangleDesiredWidth = 4.dp
+        ),
+        filledPercent = filledPercent,
+        onRectanglesCountMeasured = onRectanglesCountMeasured
     )
 }

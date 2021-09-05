@@ -77,6 +77,12 @@ class PlayerViewModel(
             PlayerIntent.NavigateBack -> {
                 NavigationManager.navigateBack()
             }
+            is PlayerIntent.DownloadWaveFormValues -> {
+                loadWaveFormValues(
+                    partsCount = intent.partsCount,
+                    waveFormUrl = intent.waveFormUrl
+                )
+            }
             is PlayerIntent.ShowTrack -> {
                 prepareTrackAndPlay(trackId = trackId)
             }
@@ -129,6 +135,17 @@ class PlayerViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             trackStreamInteractor.pauseTrack().collect {
 
+            }
+        }
+    }
+
+    private fun loadWaveFormValues(partsCount: Int, waveFormUrl: String){
+        viewModelScope.launch(Dispatchers.Default) {
+            trackInteractor.getWaveformValues(
+                url = waveFormUrl,
+                partsCount = partsCount
+            ).also {
+                consumeInternalEvent(it.playerEvent)
             }
         }
     }

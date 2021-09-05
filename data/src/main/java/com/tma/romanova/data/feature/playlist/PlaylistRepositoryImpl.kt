@@ -11,6 +11,7 @@ import com.tma.romanova.data.feature.playlist.data_source.get_track.memory.SaveT
 import com.tma.romanova.data.feature.playlist.entity.PlaylistEntity
 import com.tma.romanova.data.feature.playlist.entity.TrackEntity
 import com.tma.romanova.data.feature.playlist.entity.domain
+import com.tma.romanova.data.feature.playlist.waveform.*
 import com.tma.romanova.domain.feature.playlist.PlaylistRepository
 import com.tma.romanova.domain.feature.playlist.entity.Playlist
 import com.tma.romanova.domain.feature.playlist.entity.Track
@@ -75,6 +76,20 @@ class PlaylistRepositoryImpl(
             DataSourceType.Network -> {
                 throw UnsupportedOperationException()
             }
+        }
+    }
+
+    override suspend fun getWaveFormValues(url: String, partsCount: Int): Result<List<Float>> {
+        (BitmapDownloaderImpl(url = url).download(compressionFactor = 0.2F) as? ImageDownloadResult.Success)?.let { result ->
+            return Result.Success(
+                    data = WaveformBitmapProcessorImpl().process(
+                        bitmap = result.bitmap,
+                        partsCount = partsCount
+                    ),
+                dataSourceType = DataSourceType.Network
+            )
+        } ?: run{
+            return Result.NetworkError
         }
     }
 }

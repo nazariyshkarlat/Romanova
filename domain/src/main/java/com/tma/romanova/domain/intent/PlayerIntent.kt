@@ -17,6 +17,10 @@ sealed interface PlayerIntent {
     data class NavigateToPreviousTrack(
         val trackId: Int
     ): PlayerIntent
+    data class DownloadWaveFormValues(
+        val partsCount: Int,
+        val waveFormUrl: String
+    ): PlayerIntent
     object PauseTrack : PlayerIntent
     object ResumeTrack : PlayerIntent
     data class ShowPageLoadingError(
@@ -29,4 +33,8 @@ sealed interface PlayerIntent {
     object LoadTrack: PlayerIntent
     object UpPlayingTime: PlayerIntent
     object DownPlayingTime: PlayerIntent
+    object ShowWaveFormLoadingError: PlayerIntent
+    data class ShowWaveForm(
+        val values: List<Float>
+    ): PlayerIntent
 }

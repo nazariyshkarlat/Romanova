@@ -6,6 +6,7 @@ import com.tma.romanova.domain.intent.PlayerIntent
 import com.tma.romanova.domain.mvi.Reducer
 import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
 import com.tma.romanova.domain.state.feature.player.PlayerState
+import com.tma.romanova.domain.state.feature.player.WaveFormValuesStatus
 
 fun PlayerReducer() =
     Reducer<PlayerState, PlayerIntent> { currentState, intent ->
@@ -14,7 +15,8 @@ fun PlayerReducer() =
                 when(intent){
                     is PlayerIntent.ShowTrack -> {
                         PlayerState.TrackIsPlaying(
-                            track = intent.track
+                            track = intent.track,
+                            waveFormValuesStatus = WaveFormValuesStatus.Loading
                         )
                     }
                     is PlayerIntent.ShowPageLoadingError -> {
@@ -78,7 +80,25 @@ fun PlayerReducer() =
                     }
                     is PlayerIntent.ShowTrack -> {
                         PlayerState.TrackIsPlaying(
-                            track = intent.track
+                            track = intent.track,
+                            waveFormValuesStatus = WaveFormValuesStatus.Loading
+                        )
+                    }
+                    is PlayerIntent.DownloadWaveFormValues -> {
+                        currentState.copy(
+                            waveFormValuesStatus = WaveFormValuesStatus.Loading
+                        )
+                    }
+                    is PlayerIntent.ShowWaveFormLoadingError -> {
+                        currentState.copy(
+                            waveFormValuesStatus = WaveFormValuesStatus.Error
+                        )
+                    }
+                    is PlayerIntent.ShowWaveForm -> {
+                        currentState.copy(
+                            waveFormValuesStatus = WaveFormValuesStatus.ValuesReceived(
+                                values = intent.values
+                            )
                         )
                     }
                     is PlayerIntent.ShowPageLoadingError -> {

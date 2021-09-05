@@ -1,8 +1,6 @@
 package com.tma.romanova.domain.feature.playlist.use_case
 
-import com.tma.romanova.domain.event.GetTrackEvent
-import com.tma.romanova.domain.event.ResponseEvent
-import com.tma.romanova.domain.event.getTrackEvent
+import com.tma.romanova.domain.event.*
 import com.tma.romanova.domain.feature.playlist.PlaylistRepository
 import com.tma.romanova.domain.feature.playlist.entity.Track
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +19,13 @@ class TrackInteractorImpl(
     override suspend fun saveTrack(track: Track) {
         playlistRepository.saveTrack(track)
     }
+
+    override suspend fun getWaveformValues(url: String, partsCount: Int): GetWaveFormEvent {
+        return playlistRepository.getWaveFormValues(
+            url = url,
+            partsCount = partsCount
+        ).waveFormEvent
+    }
 }
 
 interface TrackInteractor{
@@ -31,4 +36,9 @@ interface TrackInteractor{
     suspend fun saveTrack(
         track: Track
     )
+
+    suspend fun getWaveformValues(
+        url: String,
+        partsCount: Int
+    ): GetWaveFormEvent
 }

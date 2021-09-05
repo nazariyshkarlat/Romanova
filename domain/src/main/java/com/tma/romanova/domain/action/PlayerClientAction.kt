@@ -17,6 +17,9 @@ sealed class PlayerClientAction {
     object CenterButtonClick: PlayerClientAction()
     object TimeUpClick: PlayerClientAction()
     object TimeBackClick: PlayerClientAction()
+    data class WaveFormPartsCountMeasured(
+        val partsCount: Int
+        ): PlayerClientAction()
 }
 
 fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
@@ -45,5 +48,16 @@ fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
     }
     PlayerClientAction.TimeUpClick -> PlayerIntent.UpPlayingTime
     PlayerClientAction.TimeBackClick -> PlayerIntent.DownPlayingTime
+    is PlayerClientAction.WaveFormPartsCountMeasured -> {
+        when(playerState){
+            PlayerState.Loading -> Intent.DoNothing
+            is PlayerState.TrackIsPlaying -> {
+                PlayerIntent.DownloadWaveFormValues(
+                    partsCount = this.partsCount,
+                    waveFormUrl = playerState.track.waveformUrl
+                )
+            }
+        }
+    }
     else -> Intent.DoNothing
 }

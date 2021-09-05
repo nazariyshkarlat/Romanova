@@ -7,6 +7,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.ColorUtils
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 data class AppColors(
@@ -52,4 +53,17 @@ fun Activity.DarkStatusBar(){
         flags = flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
         window.decorView.systemUiVisibility = flags
     }
+}
+
+val Color.androidColor
+get() = android.graphics.Color.argb(
+    (alpha*255).toInt(), (red*255).toInt(), (green*255).toInt(), (blue*255).toInt()
+)
+
+fun Color.toRgb(backgroundColor: Color): Color{
+    return  Color(
+        ColorUtils.compositeColors(
+            this.androidColor, backgroundColor.androidColor
+        )
+    )
 }

@@ -6,6 +6,7 @@ import com.tma.romanova.domain.feature.playlist.entity.Track
 import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository.Companion.TIME_BACK_MS
 import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository.Companion.TIME_UP_MS
 import com.tma.romanova.domain.state.feature.player.PlayerState
+import com.tma.romanova.domain.state.feature.player.WaveFormValuesStatus
 import com.tma.romanova.presentation.R
 import com.tma.romanova.presentation.extensions.drawable
 import com.tma.romanova.presentation.extensions.str
@@ -46,7 +47,9 @@ sealed class PlayerUiState {
 
     object TrackLoading: PlayerUiState()
     data class TrackLoaded(
-        val track: TrackPlayerUi
+        val track: TrackPlayerUi,
+        val waveFormValuesStatus: WaveFormValuesStatus,
+        val playedPercent: Float
     ): PlayerUiState()
 }
 
@@ -54,7 +57,9 @@ val PlayerState.ui
 get() = when(this){
     PlayerState.Loading -> PlayerUiState.TrackLoading
     is PlayerState.TrackIsPlaying -> PlayerUiState.TrackLoaded(
-        track = track.playerUi
+        track = track.playerUi,
+        playedPercent = playedPercent,
+        waveFormValuesStatus = waveFormValuesStatus
     )
 }
 

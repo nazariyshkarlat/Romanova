@@ -64,6 +64,8 @@ dependencies {
     implementation Libs.Ktor.logging
     implementation Libs.Ktor.serializationClient
 
+    implementation Libs.Coil.coil
+
     implementation Libs.Room.runtime
     implementation Libs.Room.compiler
     implementation Libs.Room.ktx

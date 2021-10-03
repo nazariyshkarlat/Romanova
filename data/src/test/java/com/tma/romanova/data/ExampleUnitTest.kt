@@ -1,9 +1,8 @@
 package com.tma.romanova.data
 
-import android.util.Log
 import com.tma.romanova.data.feature.playlist.PlaylistRepositoryImpl
-import com.tma.romanova.data.feature.playlist.data_source.get_playlist.PlaylistDataSource
-import com.tma.romanova.data.feature.playlist.data_source.get_playlist.PlaylistDataSourceProvider
+import com.tma.romanova.data.feature.now_playing_track.data_source.NowPlayingTrackDataSource
+import com.tma.romanova.data.feature.now_playing_track.data_source.NowPlayingTrackDataSourceProvider
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
@@ -14,8 +13,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
-import org.junit.Assert.*
-
 /**
  * Example local unit test, which will execute on the development machine (host).
  *
@@ -25,9 +22,9 @@ class RepositoryTest {
     @Test
     fun getPlaylists(){
         runBlocking {
-            val dataSource = PlaylistDataSource()
+            val dataSource = NowPlayingTrackDataSource()
             PlaylistRepositoryImpl(
-                playlistDataSourceProvider = PlaylistDataSourceProvider(dataSource),
+                playlistDataSourceProvider = NowPlayingTrackDataSourceProvider(dataSource),
                 playlistDataSource = dataSource,
                 httpClient = HttpClient {
                     install(HttpTimeout) {

@@ -2,7 +2,7 @@ package com.tma.romanova.domain.event
 
 import com.tma.romanova.domain.result.ErrorCause
 
-sealed class ResponseEvent : GetPlaylistEvent, GetTrackEvent, GetWaveFormEvent{
+sealed class ResponseEvent : GetPlaylistEvent, GetTrackEvent, GetWaveFormEvent, GetNowPlayingTrackEvent{
     object Loading: ResponseEvent()
     object DoNothing: ResponseEvent()
     data class ServerError(val code: Int, val message: String?): ResponseEvent(){
@@ -16,7 +16,7 @@ sealed class ResponseEvent : GetPlaylistEvent, GetTrackEvent, GetWaveFormEvent{
         val errorCase
             get() = ErrorCause.NetworkError
     }
-    data class Exception(val cause: Throwable): ResponseEvent(){
+    data class Exception(val cause: kotlin.Exception): ResponseEvent(){
         val errorCase
             get() = ErrorCause.Exception(
                 cause = cause

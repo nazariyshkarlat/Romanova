@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.tma.romanova.presentation.custom_components.DirectionPriority
 import com.tma.romanova.presentation.custom_components.Pager
 import com.tma.romanova.presentation.feature.onboarding.view_model.OnBoardingViewModel
 import com.tma.romanova.presentation.theme.LargeRadius
@@ -88,7 +89,7 @@ fun OnBoarding(viewModel: OnBoardingViewModel){
                         newSelectedIndex = viewModel.currentIndex
                     },
                     overshootFraction = .2F,
-                    newSelectedIndex = newSelectedIndex,
+                    newSelectedIndex = newSelectedIndex?.let{ it to DirectionPriority.Right },
                     itemFraction = 1f,
                     contentFactory = { item: OnBoardingViewModel.OnBoardingUi ->
                         Column(

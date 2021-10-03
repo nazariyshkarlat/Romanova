@@ -1,10 +1,12 @@
 package com.tma.romanova.domain.action
 
+import com.tma.romanova.domain.feature.playlist.entity.PlayingState
 import com.tma.romanova.domain.intent.Intent
 import com.tma.romanova.domain.intent.MainScreenIntent
 import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
 
 sealed class MainScreenClientAction {
+    object AppClose: MainScreenClientAction()
     object AboutAuthorItemClick : MainScreenClientAction()
     object NowPlayingTrackButtonClick : MainScreenClientAction()
     object NowPlayingTrackClick : MainScreenClientAction()
@@ -14,6 +16,7 @@ sealed class MainScreenClientAction {
 }
 
 fun MainScreenClientAction.toIntent(mainScreenState: MainScreenState) = when(this){
+    MainScreenClientAction.AppClose -> MainScreenIntent.SaveNowPlayingTrack
     MainScreenClientAction.AboutAuthorItemClick -> MainScreenIntent.GoToAboutAuthorScreen
     is MainScreenClientAction.CommentsClick -> {
         if(mainScreenState is MainScreenState.PlaylistLoadingSuccess) {
@@ -41,7 +44,7 @@ fun MainScreenClientAction.toIntent(mainScreenState: MainScreenState) = when(thi
     MainScreenClientAction.NowPlayingTrackButtonClick -> {
         when(val nowPlaying = mainScreenState.nowPlayingState){
             is MainScreenState.NowPlayingState.AudioIsPlaying -> {
-                if(nowPlaying.isOnPause){
+                if(nowPlaying.track.playingState is PlayingState.IsOnPause){
                     MainScreenIntent.ResumeNowPlayingTrack(
                         track = nowPlaying.track
                     )

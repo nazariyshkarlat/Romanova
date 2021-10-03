@@ -1,8 +1,8 @@
 package com.tma.romanova.presentation.feature.main.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -23,17 +24,22 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.tma.romanova.core.application
 import com.tma.romanova.domain.action.MainScreenClientAction
+import com.tma.romanova.domain.result.DataSourceType
+import com.tma.romanova.domain.result.Result
 import com.tma.romanova.presentation.feature.main.entity.MainScreenTrackItemUi
 import com.tma.romanova.presentation.feature.main.entity.NowPlayingTrackUi
 import com.tma.romanova.presentation.feature.main.state.MainScreenUiState
 import com.tma.romanova.presentation.feature.main.view_model.MainScreenViewModel
 import com.tma.romanova.presentation.theme.*
+import kotlin.math.roundToInt
 
 @Composable
 fun MainScreen(viewModel: MainScreenViewModel){
@@ -61,7 +67,18 @@ fun MainScreen(viewModel: MainScreenViewModel){
 
         when(state){
             is MainScreenUiState.PlaylistIsLoading -> {
-
+                AlbumTitle(
+                    title = "",
+                    modifier = Modifier.padding(
+                        top = 28.dp
+                    )
+                )
+                PodcastsMock(
+                    modifier = Modifier
+                        .padding(
+                            top = 20.dp
+                        )
+                )
             }
             is MainScreenUiState.PlaylistLoadingError -> {
 
@@ -162,7 +179,10 @@ fun AuthorItem(
             Image(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(60.dp),
+                    .size(60.dp)
+                    .clip(
+                        RoundedCornerShape(MediumRadius)
+                    ),
                 painter= rememberDrawablePainter(
                     drawable = aboutAuthorItem.authorImage
                 ),
@@ -310,6 +330,63 @@ fun Podcasts(
     }
 }
 
+@Composable
+fun PodcastsMock(modifier: Modifier){
+    BoxWithConstraints(
+        modifier = modifier
+    ) {
+
+        Row(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight()
+                .horizontalScroll(rememberScrollState()),
+        ){
+            val itemsCount: Int = ((this@BoxWithConstraints.maxWidth +14.dp)/(200.dp+14.dp)).roundToInt()
+            (0 until itemsCount).forEach {
+                if(it != 0)
+                    Divider(
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .width(14.dp),
+                        color = Color.Transparent
+                    )
+                PodcastMockItem(
+                    modifier = Modifier
+                        .padding(
+                            start = if(it == 0) LayoutLargeRLPadding else 0.dp,
+                            end = if(it == itemsCount-1) LayoutLargeRLPadding else 0.dp,
+                            top = 16.dp,
+                            bottom = 16.dp
+                        )
+                )
+                if(it != itemsCount-1)
+                    Divider(
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .width(14.dp),
+                        color = Color.Transparent
+                    )
+            }
+        }
+    }
+}
+
+@Composable
+fun PodcastMockItem(modifier: Modifier){
+    Card(
+        modifier = modifier
+            .size(
+                width = 200.dp,
+                height = 246.dp
+            ),
+        shape = RoundedCornerShape(MediumRadius),
+        elevation = 8.dp,
+        backgroundColor = MaterialTheme.appColors.background
+    ) {
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PodcastItem(
@@ -354,7 +431,7 @@ fun PodcastItem(
                 .padding(
                     start = 12.dp,
                     end = (12 - 5).dp,
-                    bottom = (12-5).dp
+                    bottom = (12 - 5).dp
                 )
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
@@ -370,7 +447,7 @@ fun PodcastItem(
                     fontWeight = FontWeight.Bold
                 )
             )
-            Row(
+            /*Row(
                 modifier = Modifier
                     .padding(
                         top = 4.dp,
@@ -456,8 +533,8 @@ fun PodcastItem(
                             )
                         )
                     }
-                }
-            }
+                    }
+                }*/
         }
     }
 }

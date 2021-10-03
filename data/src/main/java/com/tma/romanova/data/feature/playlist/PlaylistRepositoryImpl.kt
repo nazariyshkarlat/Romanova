@@ -3,15 +3,17 @@ package com.tma.romanova.data.feature.playlist
 import com.tma.romanova.data.data_source.DataSource
 import com.tma.romanova.data.data_source.DataSourceProvider
 import com.tma.romanova.data.data_source.DataStore
+import com.tma.romanova.data.data_source.memory.result
 import com.tma.romanova.data.data_source.memory.toResult
 import com.tma.romanova.data.data_source.network.toResult
-import com.tma.romanova.data.feature.playlist.data_source.get_playlist.api.GetPlaylistNetworkRequest
-import com.tma.romanova.data.feature.playlist.data_source.get_track.memory.GetTrackMemoryRequest
-import com.tma.romanova.data.feature.playlist.data_source.get_track.memory.SaveTrackMemoryRequest
+import com.tma.romanova.data.feature.playlist.api.GetPlaylistNetworkRequest
+import com.tma.romanova.data.feature.playlist.memory.GetPlaylistMemoryRequest
+import com.tma.romanova.data.feature.playlist.memory.SavePlaylistMemoryRequest
+import com.tma.romanova.data.feature.track_navigation.memory.GetTrackMemoryRequest
 import com.tma.romanova.data.feature.playlist.entity.PlaylistEntity
 import com.tma.romanova.data.feature.playlist.entity.TrackEntity
 import com.tma.romanova.data.feature.playlist.entity.domain
-import com.tma.romanova.data.feature.playlist.waveform.*
+import com.tma.romanova.data.feature.waveform.*
 import com.tma.romanova.domain.feature.playlist.PlaylistRepository
 import com.tma.romanova.domain.feature.playlist.entity.Playlist
 import com.tma.romanova.domain.feature.playlist.entity.Track
@@ -21,31 +23,30 @@ import io.ktor.client.*
 import java.lang.UnsupportedOperationException
 
 class PlaylistRepositoryImpl(
-    private val playlistDataSource: DataSource<PlaylistEntity, PlaylistEntity, PlaylistEntity>,
+    private val playlistDataSource: DataSource<PlaylistEntity, Playlist, Playlist>,
     private val playlistDataSourceProvider: DataSourceProvider,
-    private val trackDataSourceProvider: DataSourceProvider,
-    private val trackDataStoreProvider: DataSourceProvider,
+    private val playlistDataStore: DataStore<PlaylistEntity, Playlist, Playlist>,
+    private val playlistDataStoreProvider: DataSourceProvider,
     private val trackDataSource: DataSource<TrackEntity, Track, Track>,
-    private val trackDataStore: DataStore<TrackEntity, Track, Track>,
+    private val trackDataSourceProvider: DataSourceProvider,
     private val httpClient: HttpClient
 ) : PlaylistRepository {
     override suspend fun getPlaylist(): Result<Playlist> =
-        when(playlistDataSourceProvider.dataSourceType){
+        when(playlistDataSourceProvider.sourceType){
             DataSourceType.Cache -> {
                 throw UnsupportedOperationException()
             }
             DataSourceType.Network -> playlistDataSource.getFromServer(
                 GetPlaylistNetworkRequest(httpClient = httpClient)
-            ).toResult {
-                it.domain
-            }
+            ).toResult(PlaylistEntity::domain)
             DataSourceType.Memory -> {
-                throw UnsupportedOperationException()
+                playlistDataSource.getFromMemory(
+                    GetPlaylistMemoryRequest()
+                ).result
             }
         }
-
     override suspend fun getTrack(trackId: Int): Result<Track> =
-        when(trackDataSourceProvider.dataSourceType){
+        when(trackDataSourceProvider.sourceType){
             DataSourceType.Cache -> {
                 throw UnsupportedOperationException()
             }
@@ -55,18 +56,16 @@ class PlaylistRepositoryImpl(
             DataSourceType.Memory -> {
                 trackDataSource.getFromMemory(
                     GetTrackMemoryRequest(trackId = trackId)
-                ).toResult {
-                    it
-                }
+                ).result
             }
         }
 
-    override suspend fun saveTrack(track: Track) {
-        when (trackDataStoreProvider.dataSourceType) {
+    override suspend fun savePlaylist(playlist: Playlist) {
+        when (playlistDataStoreProvider.sourceType) {
             DataSourceType.Memory -> {
-                trackDataStore.saveToMemory(
-                    SaveTrackMemoryRequest(
-                        track = track
+                playlistDataStore.saveToMemory(
+                    SavePlaylistMemoryRequest(
+                        playlist = playlist
                     )
                 )
             }

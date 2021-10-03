@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,9 +30,16 @@ import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.tma.romanova.domain.action.PlayerClientAction
+import com.tma.romanova.domain.action.TouchAction
+import com.tma.romanova.domain.action.playerClientAction
 import com.tma.romanova.domain.state.feature.player.WaveFormValuesStatus
+import com.tma.romanova.presentation.custom_components.DirectionPriority
+import com.tma.romanova.presentation.custom_components.Pager
+import com.tma.romanova.presentation.custom_components.ScrollBehavior
 import com.tma.romanova.presentation.extensions.toRgb
 import com.tma.romanova.presentation.feature.player.state.PlayerUiState
+import com.tma.romanova.presentation.feature.player.state.PlayerUiState.Companion.likeIcon
+import com.tma.romanova.presentation.feature.player.state.TrackPlayerUi
 import com.tma.romanova.presentation.feature.player.view_model.PlayerViewModel
 import com.tma.romanova.presentation.theme.ExtraLargeRadius
 import com.tma.romanova.presentation.theme.LayoutLargeRLPadding
@@ -96,6 +105,12 @@ fun Player(
             )
         }
 
+        val onWaveFormTouch: (TouchAction) -> Unit = {
+            viewModel.consumeClientAction(
+                action = it.playerClientAction
+            )
+        }
+
 
         val (toolbar, guideline, bgBox, trackImage, trackTitle, authorName, waveForm, duration, buttonsBar) = createRefs()
 
@@ -103,6 +118,14 @@ fun Player(
 
         when(state){
             is PlayerUiState.TrackLoaded -> {
+
+                val onTrackImageScroll: (TrackPlayerUi) -> Unit = {
+                    viewModel.consumeClientAction(
+                        action = PlayerClientAction.OnTrackImageScrolled(
+                            newTrackPosition = state.allTracks.indexOf(it)
+                        )
+                    )
+                }
 
                 Box(
                     modifier = Modifier
@@ -138,7 +161,7 @@ fun Player(
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
                         },
-                    likeButtonIcon = state.track.likeIcon,
+                    likeButtonIcon = state.currentTrack.likeIcon,
                     onLikeButtonClick = onLikeButtonClick,
                     toolbarTitle = PlayerUiState.toolbarTitle
                 )
@@ -148,12 +171,15 @@ fun Player(
                         .constrainAs(trackImage) {
                             top.linkTo(toolbar.bottom)
                             bottom.linkTo(trackTitle.top)
-                            start.linkTo(parent.start, margin = LayoutLargeRLPadding)
-                            end.linkTo(parent.end, margin = LayoutLargeRLPadding)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
                             height = Dimension.fillToConstraints
                             width = Dimension.fillToConstraints
                         },
-                    artworkUrl = state.track.artworkUrl
+                    tracks = state.allTracks,
+                    onItemSelect = onTrackImageScroll,
+                    selectedIndex = state.selectedTrackPosition,
+                    desiredTrackPosition = state.desiredTrackPosition
                 )
 
                 TrackTitle(
@@ -164,7 +190,7 @@ fun Player(
                             end.linkTo(parent.end, margin = LayoutLargeRLPadding)
                             width = Dimension.fillToConstraints
                         },
-                    title = state.track.trackTitle
+                    title = state.currentTrack.trackTitle
                 )
 
                 AuthorName(
@@ -185,10 +211,12 @@ fun Player(
                             start.linkTo(parent.start, margin = LayoutLargeRLPadding)
                             end.linkTo(parent.end, margin = LayoutLargeRLPadding)
                             width = Dimension.fillToConstraints
+                            height = Dimension.value(52.dp)
                         },
                     onRectanglesCountMeasured = onRectanglesCountMeasured,
                     values = (state.waveFormValuesStatus as? WaveFormValuesStatus.ValuesReceived)?.values ?: emptyList(),
-                    filledPercent = state.playedPercent
+                    filledPercent = state.playedPercent,
+                    onTouchAction = onWaveFormTouch
                 )
 
                 Duration(
@@ -199,7 +227,7 @@ fun Player(
                             end.linkTo(parent.end)
                             width = Dimension.fillToConstraints
                         },
-                    durationStr = state.track.currentTimePosition
+                    durationStr = state.currentTimePosition
                 )
 
                 ButtonsBar(
@@ -217,7 +245,7 @@ fun Player(
                     onTimeUpClick = onTimeUpButtonClick,
                     timeBackIconText = PlayerUiState.timeBackText,
                     timeUpIconText = PlayerUiState.timeUpText,
-                    centerButtonIcon = state.track.centerButtonIcon,
+                    centerButtonIcon = state.currentTrack.centerButtonIcon,
                     nextTrackIcon = PlayerUiState.nextTrackIcon,
                     prevTrackIcon = PlayerUiState.prevBackIcon,
                     timeBackIcon = PlayerUiState.timeBackIcon,
@@ -258,7 +286,7 @@ fun Toolbar(
             onClick = onBackButtonClick
         ) {
             Icon(
-                imageVector = Icons.Rounded.ArrowBack,
+                painter = rememberDrawablePainter(drawable = PlayerUiState.backButtonIcon),
                 contentDescription = null,
                 tint = MaterialTheme.appColors.onPrimary
             )
@@ -279,7 +307,7 @@ fun Toolbar(
                 fontWeight = FontWeight.Bold
             )
         )
-        IconButton(
+/*        IconButton(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(
@@ -295,7 +323,7 @@ fun Toolbar(
                 contentDescription = null,
                 tint = MaterialTheme.appColors.onPrimary
             )
-        }
+        }*/
     }
 }
 
@@ -435,33 +463,57 @@ fun ButtonsBar(
 @Composable
 fun TrackImage(
     modifier: Modifier,
-    artworkUrl: String
-){
-    Card(
-        modifier = modifier
-            .aspectRatio(
-                ratio = 0.92F,
-            ),
-        shape = RoundedCornerShape(
-            size = ExtraLargeRadius
-        )
-    ) {
-        Image(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            contentDescription = null,
-            painter = rememberImagePainter(
-                data = artworkUrl,
-                builder = {
-                    crossfade(true)
-                    diskCachePolicy(CachePolicy.ENABLED)
-                    memoryCachePolicy(CachePolicy.ENABLED)
-                }
-            )
-        )
-    }
+    tracks: List<TrackPlayerUi>,
+    selectedIndex: Int,
+    onItemSelect: (TrackPlayerUi) -> Unit,
+    desiredTrackPosition: Pair<Int, DirectionPriority>
+) {
+    val tracks = remember {tracks}
+    Pager(
+        items = tracks,
+        modifier = modifier,
+        orientation = Orientation.Horizontal,
+        onItemSelect = onItemSelect,
+        hasInfinitePages = true,
+        overshootFraction = .2F,
+        newSelectedIndex = desiredTrackPosition,
+        initialIndex = selectedIndex,
+        itemFraction = 1f,
+        scrollBehavior = ScrollBehavior.FULLY_SCROLLED,
+        contentFactory = { track: TrackPlayerUi ->
+            Card(
+                modifier = modifier
+                    .padding(
+                        start = LayoutLargeRLPadding,
+                        end = LayoutLargeRLPadding
+                    )
+                    .aspectRatio(
+                        ratio = 0.92F,
+                    ),
+                shape = RoundedCornerShape(
+                    size = ExtraLargeRadius
+                )
+            ) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null,
+                    painter = rememberImagePainter(
+                        data = track.artworkUrl,
+                        builder = {
+                            crossfade(true)
+                            diskCachePolicy(CachePolicy.ENABLED)
+                            memoryCachePolicy(CachePolicy.ENABLED)
+                        }
+                    )
+                )
+            }
+        }
+    )
 }
+
+data class Drawable1(val drawable: Drawable)
 
 @Composable
 fun TrackTitle(
@@ -522,23 +574,28 @@ fun WaveForm(
     modifier: Modifier,
     values: List<Float>,
     filledPercent: Float,
-    onRectanglesCountMeasured: (Int) -> Unit
+    onRectanglesCountMeasured: (Int) -> Unit,
+    onTouchAction: (TouchAction) -> Unit
 ){
-    WaveForm(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        values = values,
-        waveFormStyle = WaveFormStyle(
-            unfilledColor = MaterialTheme.appColors.surface.toRgb(
-                backgroundColor = MaterialTheme.appColors.background
+    Box(modifier = modifier) {
+        WaveForm(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
+            values = values,
+            targetHeight = 52.dp,
+            waveFormStyle = WaveFormStyle(
+                unfilledColor = MaterialTheme.appColors.surface.toRgb(
+                    backgroundColor = MaterialTheme.appColors.background
+                ),
+                filledColor = MaterialTheme.appColors.primary,
+                rectanglesCornerRadius = ExtraLargeRadius,
+                rectanglesPadding = 3.dp,
+                rectangleDesiredWidth = 4.dp
             ),
-            filledColor = MaterialTheme.appColors.primary,
-            rectanglesCornerRadius = ExtraLargeRadius,
-            rectanglesPadding = 3.dp,
-            rectangleDesiredWidth = 4.dp
-        ),
-        filledPercent = filledPercent,
-        onRectanglesCountMeasured = onRectanglesCountMeasured
-    )
+            filledPercent = filledPercent,
+            onRectanglesCountMeasured = onRectanglesCountMeasured,
+            onTouchAction = onTouchAction
+        )
+    }
 }

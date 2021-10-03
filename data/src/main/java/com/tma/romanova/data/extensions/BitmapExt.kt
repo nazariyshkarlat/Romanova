@@ -30,8 +30,6 @@ fun Bitmap.compressed(compressionFactor: Float): Bitmap {
     val scaleHeight = height*compressionFactor
     val matrix = Matrix()
     matrix.postScale(scaleWidth, scaleHeight)
-    println(scaleWidth)
-    println(scaleHeight)
     return Bitmap.createBitmap(
         this, 0, 0, width, height,
         matrix, false

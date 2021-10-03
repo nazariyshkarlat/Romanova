@@ -2,6 +2,7 @@ package com.tma.romanova.presentation.feature.main.entity
 
 import android.graphics.drawable.Drawable
 import com.tma.romanova.core.application
+import com.tma.romanova.domain.feature.playlist.entity.PlayingState
 import com.tma.romanova.domain.feature.playlist.entity.Track
 import com.tma.romanova.presentation.R
 import com.tma.romanova.presentation.extensions.dp
@@ -50,12 +51,13 @@ get() = MainScreenTrackItemUi(
     isOnPrimaryLikesTextColor = isLiked
 )
 
-fun Track.toNowPlayingTrackUi(isOnPause: Boolean) = NowPlayingTrackUi(
-    trackTitle = title,
-    artworkUrl = smallArtworkUrl,
-    trackId = id,
-    buttonIcon = if(isOnPause) R.drawable.ic_play.drawable
-        else R.drawable.ic_pause.drawable
+val Track.nowPlayingTrackUi
+get() = NowPlayingTrackUi(
+        trackTitle = title,
+        artworkUrl = smallArtworkUrl,
+        trackId = id,
+        buttonIcon = if(playingState is PlayingState.IsOnPause) R.drawable.ic_play.drawable
+            else R.drawable.ic_pause.drawable
 )
 
 data class Duration(

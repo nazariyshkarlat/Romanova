@@ -1,6 +1,7 @@
 package com.tma.romanova.di
 
 import android.util.Log
+import com.tma.romanova.data.BuildConfig
 import com.tma.romanova.extensions.unescape
 import io.ktor.client.*
 import io.ktor.client.features.*
@@ -38,8 +39,29 @@ val networkModule = module {
                 level = LogLevel.BODY
             }
             install(DefaultRequest) {
-                accept(ContentType.Application.Xml)
+                headers{
+                    appendAll(defHeaders)
+                }
             }
         }
     }
 }
+
+val defHeaders = headersOf(
+    "Authorization" to listOf(
+        "OAuth ${BuildConfig.OAUTH_TOKEN}"
+    ),
+    "Host" to listOf(
+        BuildConfig.BASE_URL.removePrefix("https://")
+    ),
+    "Accept-Encoding" to listOf(
+        "utf-8",
+        "application/json"
+    ),
+    "Content-Type" to listOf("application/json; charset=utf-8"),
+    "Accept" to listOf(
+        "text/javascript",
+        "*/*; q=0.01",
+        "application/json"
+    )
+)

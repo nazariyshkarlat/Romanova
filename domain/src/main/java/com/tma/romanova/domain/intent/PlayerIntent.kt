@@ -5,11 +5,9 @@ import com.tma.romanova.domain.feature.playlist.entity.Track
 import com.tma.romanova.domain.result.ErrorCause
 
 sealed interface PlayerIntent {
+    object SaveNowPlayingTrack: PlayerIntent
     object LikeTrack : PlayerIntent
     object DislikeTrack : PlayerIntent
-    data class ChangePosition(
-        val newPositionMs: Int
-    ) : PlayerIntent
     object NavigateBack : PlayerIntent
     data class NavigateToNextTrack(
         val trackId: Int
@@ -28,13 +26,35 @@ sealed interface PlayerIntent {
     ) : PlayerIntent
     object ShowPageIsLoading : PlayerIntent
     data class ShowTrack(
-        val track: Track
+        val currentTrack: Track,
+        val allTracks: List<Track>
     ) : PlayerIntent
-    object LoadTrack: PlayerIntent
+    data class LoadTrack(val trackId: Int): PlayerIntent
     object UpPlayingTime: PlayerIntent
     object DownPlayingTime: PlayerIntent
     object ShowWaveFormLoadingError: PlayerIntent
     data class ShowWaveForm(
         val values: List<Float>
     ): PlayerIntent
+    data class MoveWaveFormToPosition(
+        val playedPercent: Float,
+        val touchStatus: TouchStatus
+    ): PlayerIntent
+    data class MoveTrackToPosition(
+        val newPositionMs: Long,
+        val isClickAction: Boolean
+    ): PlayerIntent
+    object MoveWaveFormToStartTouchPosition: PlayerIntent
+    object PlayerPrepared: PlayerIntent
+}
+
+sealed class TouchStatus{
+
+    val isDownActionVal
+    get() = this is IsTouch && this.isDownAction
+
+    object IsNotTouch: TouchStatus()
+    data class IsTouch(
+        val isDownAction: Boolean
+    ): TouchStatus()
 }

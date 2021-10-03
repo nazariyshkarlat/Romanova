@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -12,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.tma.romanova.core.metadata
+import com.tma.romanova.domain.feature.now_playing_track.use_case.NowPlayingTrackInteractor
 import com.tma.romanova.domain.navigation.NavigationCommand
 import com.tma.romanova.domain.navigation.NavigationDirections
 import com.tma.romanova.domain.navigation.NavigationDirections.Player.Arguments.TRACK_ID
@@ -27,10 +29,12 @@ import com.tma.romanova.presentation.feature.player.ui.Player
 import com.tma.romanova.presentation.feature.player.view_model.PlayerViewModel
 import com.tma.romanova.presentation.theme.AppTheme
 import kotlinx.coroutines.flow.collect
+import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.getViewModel
 import org.koin.core.parameter.parametersOf
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -80,6 +84,12 @@ class MainActivity : ComponentActivity() {
                     EnterAnimation {
                         MainScreen(viewModel = viewModel)
                     }
+
+                    DisposableEffect(key1 = viewModel){
+                        onDispose {
+                            viewModel.onStop()
+                        }
+                    }
                 }
 
                 composable(NavigationDirections.AboutAuthor.route){ backStackEntry ->
@@ -107,6 +117,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         Player(viewModel = viewModel)
+
+                        DisposableEffect(key1 = viewModel){
+                            onDispose {
+                                viewModel.onStop()
+                            }
+                        }
                     }
                 }
 

@@ -65,6 +65,14 @@ object Libs {
         const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:$version"
     }
 
+    object ExoPlayer{
+        private const val version = "2.15.1"
+
+        const val core = "com.google.android.exoplayer:exoplayer-core:$version"
+        const val dash = "com.google.android.exoplayer:exoplayer-dash:$version"
+        const val ui = "com.google.android.exoplayer:exoplayer-ui:$version"
+    }
+
     object ConstraintLayout{
         private const val version = "1.0.0-beta02"
         const val constraintLayout = "androidx.constraintlayout:constraintlayout-compose:$version"
@@ -95,7 +103,7 @@ object Libs {
     }
 
     object Ktor {
-        private const val version = "1.6.0"
+        private const val version = "1.6.3"
 
         const val client = "io.ktor:ktor-client-android:$version"
         const val logging = "io.ktor:ktor-client-logging-jvm:$version"

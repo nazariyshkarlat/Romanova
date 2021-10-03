@@ -1,5 +1,6 @@
 package com.tma.romanova.domain.state.feature.main_screen.reducer
 
+import com.tma.romanova.domain.feature.playlist.entity.PlayingState
 import com.tma.romanova.domain.intent.Intent
 import com.tma.romanova.domain.intent.MainScreenIntent
 import com.tma.romanova.domain.mvi.Reducer
@@ -25,6 +26,37 @@ fun MainScreenReducer() =
                 }
             }
             Intent.DoNothing -> currentState
+            is MainScreenIntent.UpdateNowPlayingTrack -> {
+                when(currentState){
+                    is MainScreenState.PlaylistIsLoading -> currentState.copy(
+                        nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
+                            track = intent.track.copy(
+                                playingState = PlayingState.IsOnPause(
+                                    currentPositionMs = intent.track.playingState.positionMs ?: 0L
+                                )
+                            )
+                        )
+                    )
+                    is MainScreenState.PlaylistLoadingError -> currentState.copy(
+                        nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
+                            track = intent.track.copy(
+                                playingState = PlayingState.IsOnPause(
+                                    currentPositionMs = intent.track.playingState.positionMs ?: 0L
+                                )
+                            )
+                        )
+                    )
+                    is MainScreenState.PlaylistLoadingSuccess -> currentState.copy(
+                        nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
+                            track = intent.track.copy(
+                                playingState = PlayingState.IsOnPause(
+                                    currentPositionMs = intent.track.playingState.positionMs ?: 0L
+                                )
+                            )
+                        )
+                    )
+                }
+            }
             is MainScreenIntent.PauseNowPlayingTrack -> {
                 when(val nowPlaying = currentState.nowPlayingState){
                     is MainScreenState.NowPlayingState.AudioIsPlaying -> {
@@ -32,21 +64,33 @@ fun MainScreenReducer() =
                             is MainScreenState.PlaylistIsLoading -> {
                                 currentState.copy(
                                     nowPlayingState = nowPlaying.copy(
-                                        isOnPause = true
+                                        track = nowPlaying.track.copy(
+                                            playingState = PlayingState.IsOnPause(
+                                                currentPositionMs = nowPlaying.track.playingState.positionMs ?: 0L
+                                            )
+                                        )
                                     )
                                 )
                             }
                             is MainScreenState.PlaylistLoadingError -> {
                                 currentState.copy(
                                     nowPlayingState = nowPlaying.copy(
-                                        isOnPause = true
+                                        track = nowPlaying.track.copy(
+                                            playingState = PlayingState.IsOnPause(
+                                                currentPositionMs = nowPlaying.track.playingState.positionMs ?: 0L
+                                            )
+                                        )
                                     )
                                 )
                             }
                             is MainScreenState.PlaylistLoadingSuccess -> {
                                 currentState.copy(
                                     nowPlayingState = nowPlaying.copy(
-                                        isOnPause = true
+                                        track = nowPlaying.track.copy(
+                                            playingState = PlayingState.IsOnPause(
+                                                currentPositionMs = nowPlaying.track.playingState.positionMs ?: 0L
+                                            )
+                                        )
                                     )
                                 )
                             }
@@ -78,21 +122,33 @@ fun MainScreenReducer() =
                             is MainScreenState.PlaylistIsLoading -> {
                                 currentState.copy(
                                     nowPlayingState = nowPlaying.copy(
-                                        isOnPause = false
+                                        track = nowPlaying.track.copy(
+                                            playingState = PlayingState.IsPlaying(
+                                                currentPositionMs = nowPlaying.track.playingState.positionMs ?: 0L
+                                            )
+                                        )
                                     )
                                 )
                             }
                             is MainScreenState.PlaylistLoadingError -> {
                                 currentState.copy(
                                     nowPlayingState = nowPlaying.copy(
-                                        isOnPause = false
+                                        track = nowPlaying.track.copy(
+                                            playingState = PlayingState.IsPlaying(
+                                                currentPositionMs = nowPlaying.track.playingState.positionMs ?: 0L
+                                            )
+                                        )
                                     )
                                 )
                             }
                             is MainScreenState.PlaylistLoadingSuccess -> {
                                 currentState.copy(
                                     nowPlayingState = nowPlaying.copy(
-                                        isOnPause = false
+                                        track = nowPlaying.track.copy(
+                                            playingState = PlayingState.IsPlaying(
+                                                currentPositionMs = nowPlaying.track.playingState.positionMs ?: 0L
+                                            )
+                                        )
                                     )
                                 )
                             }

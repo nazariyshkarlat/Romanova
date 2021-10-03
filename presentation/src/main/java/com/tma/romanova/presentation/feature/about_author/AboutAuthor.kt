@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -32,6 +34,7 @@ import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.presentation.theme.appColors
 import com.tma.romanova.presentation.R
 import com.tma.romanova.presentation.extensions.str
+import com.tma.romanova.presentation.theme.ExtraLargeRadius
 import com.tma.romanova.presentation.theme.LayoutSmallRLPadding
 
 @Composable
@@ -193,9 +196,12 @@ fun AuthorInfo(
         Image(
             modifier = Modifier
                 .width(146.dp)
-                .fillMaxHeight(),
+                .height(160.dp)
+                .clip(
+                    RoundedCornerShape(ExtraLargeRadius)
+                ),
             painter = painterResource(id = R.mipmap.about_author),
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             contentDescription = null
         )
         Column(

@@ -14,3 +14,6 @@ fun <T: Any, R: Any> CacheResult<T>.toResult(transformation: (T) -> R) : Result<
     is CacheResult.Success -> Result.Success(data = transformation(data), dataSourceType = DataSourceType.Cache)
     is CacheResult.Exception -> Result.LocalException(cause = cause)
 }
+
+val <T: Any> CacheResult<T>.result
+get() = this.toResult { it }

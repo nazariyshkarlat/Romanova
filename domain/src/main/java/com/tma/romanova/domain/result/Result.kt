@@ -7,3 +7,22 @@ sealed class Result<out T: Any> {
     object CacheIsEmpty : Result<Nothing>()
     object NetworkError : Result<Nothing>()
 }
+
+fun <T: Any, R: Any>Result<T>.map(
+    mapSuccess: (Result.Success<T>) -> R
+): Result<R> =
+    when(this){
+        Result.CacheIsEmpty -> Result.CacheIsEmpty
+        is Result.LocalException -> Result.LocalException(
+            cause = cause
+        )
+        Result.NetworkError -> Result.NetworkError
+        is Result.ServerError -> Result.ServerError(
+            code = code,
+            message = message
+        )
+        is Result.Success -> Result.Success(
+            data = mapSuccess(this),
+            dataSourceType = dataSourceType
+        )
+    }

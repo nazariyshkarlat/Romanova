@@ -22,9 +22,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        buildConfigField "String", "BASE_URL", '"https://api.soundcloud.com"'
+        buildConfigField "String", "BASE_URL", '"https://api-v2.soundcloud.com"'
         buildConfigField "String", "USER_ID", '"1025550217"'
-        buildConfigField "String", "CLIENT_ID", '"8538a1744a7fdaa59981232897501e04"'
+        buildConfigField "String", "OAUTH_TOKEN", '"2-290059-1022167099-oo1b6zAMBiOGi"'
+        buildConfigField "String", "CLIENT_ID", '"xwrCAMrX4rtC78f7OgEM1A4mk0Ipk6ED"'
         buildConfigField "String", "PLAYLIST_ID", '"1310117251"'
     }
 
@@ -69,6 +70,10 @@ dependencies {
     implementation Libs.Room.runtime
     implementation Libs.Room.compiler
     implementation Libs.Room.ktx
+
+    implementation Libs.ExoPlayer.core
+    implementation Libs.ExoPlayer.dash
+    implementation Libs.ExoPlayer.ui
 
     testImplementation Libs.Coroutines.test
     testImplementation Tests.junit

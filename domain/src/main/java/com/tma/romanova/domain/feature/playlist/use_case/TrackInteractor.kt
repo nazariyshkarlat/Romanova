@@ -11,14 +11,6 @@ import kotlinx.coroutines.flow.flowOn
 class TrackInteractorImpl(
     private val playlistRepository: PlaylistRepository
 ): TrackInteractor {
-    override fun getTrack(trackId: Int): Flow<GetTrackEvent> = flow{
-        emit(ResponseEvent.Loading)
-        emit(playlistRepository.getTrack(trackId).getTrackEvent)
-    }.flowOn(Dispatchers.IO)
-
-    override suspend fun saveTrack(track: Track) {
-        playlistRepository.saveTrack(track)
-    }
 
     override suspend fun getWaveformValues(url: String, partsCount: Int): GetWaveFormEvent {
         return playlistRepository.getWaveFormValues(
@@ -29,13 +21,6 @@ class TrackInteractorImpl(
 }
 
 interface TrackInteractor{
-    fun getTrack(
-        trackId: Int
-    ): Flow<GetTrackEvent>
-
-    suspend fun saveTrack(
-        track: Track
-    )
 
     suspend fun getWaveformValues(
         url: String,

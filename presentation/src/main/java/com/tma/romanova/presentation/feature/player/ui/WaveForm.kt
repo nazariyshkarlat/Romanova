@@ -4,25 +4,34 @@ import android.graphics.Bitmap
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.view.MotionEvent
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.tma.romanova.domain.action.TouchAction
 import com.tma.romanova.presentation.extensions.androidColor
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WaveForm(
+    targetHeight: Dp,
     modifier: Modifier,
     values: List<Float>,
     waveFormStyle: WaveFormStyle,
     filledPercent: Float,
-    onRectanglesCountMeasured: (Int) -> Unit
+    onRectanglesCountMeasured: (Int) -> Unit = {},
+    onTouchAction: (TouchAction) -> Unit = {}
 ){
 
     val state = remember(filledPercent, values){
@@ -32,12 +41,21 @@ fun WaveForm(
         )
     }
 
+    var currentHeight: Dp by remember{ mutableStateOf(0.dp) }
+
     val values = state.values
     val filledPercent = state.filledPercent
 
-    BoxWithConstraints(modifier = modifier) {
+    val animToValue = if (values.isEmpty()) (targetHeight.div(10.dp)).dp else targetHeight
+
+    val height: Dp by animateDpAsState(animToValue, animationSpec = tween(
+        durationMillis = if(currentHeight > animToValue) 0 else 500,
+        easing = FastOutSlowInEasing
+    ))
+
+    BoxWithConstraints(modifier = modifier.height(height = height)) {
         val width = this.maxWidth
-        val height = this.maxHeight
+        currentHeight = this.maxHeight
         val rectDesiredWidth = waveFormStyle.rectangleDesiredWidth
         val rectPadding = waveFormStyle.rectanglesPadding
         val cornerRadius = waveFormStyle.rectanglesCornerRadius
@@ -46,32 +64,30 @@ fun WaveForm(
             ((width - rectPadding) / (rectPadding + rectDesiredWidth)).toInt()
         }
 
-        DisposableEffect(key1 = desiredRectCount) {
-            onRectanglesCountMeasured(
-                desiredRectCount
-            )
+        DisposableEffect(key1 = values) {
+            if(values.isEmpty()) {
+                onRectanglesCountMeasured(
+                    desiredRectCount
+                )
+            }
+
             onDispose {
 
             }
         }
 
-        println(filledPercent)
+        if(currentHeight == 0.dp) return@BoxWithConstraints
 
         if (values.isNotEmpty()) {
             val density = LocalDensity.current
 
             val rectCount = values.size
             val rectWidth = remember(key1 = width, key2 = values, key3 = rectPadding){
-                ((width-rectPadding)-rectPadding*rectCount)/(rectCount)
-            }
-
-
-            val drawRLPadding = remember(key1 = width, key2 = values, key3 = rectPadding) {
-                (width - ((rectPadding + rectWidth) * rectCount - rectPadding)) / 2F
+                ((width)-rectPadding*(rectCount-1))/(rectCount)
             }
 
             val widthPx = with(LocalDensity.current) { width.toPx() }.toInt()
-            val heightPx = with(LocalDensity.current) { height.toPx() }.toInt()
+            val heightPx = with(LocalDensity.current) { currentHeight.toPx() }.toInt()
 
             val maskPaint = remember(
                 key1 = waveFormStyle.unfilledColor.value
@@ -98,24 +114,24 @@ fun WaveForm(
                 }
             }
 
-            val maskBitmap = remember {
+            val maskBitmap = remember(currentHeight) {
                 Bitmap.createBitmap(
                     widthPx, heightPx, Bitmap.Config.ARGB_8888
                 )
             }
-            val maskCanvas = remember {
+            val maskCanvas = remember(currentHeight) {
                 android.graphics.Canvas(maskBitmap)
             }
 
-            DisposableEffect(key1 = width, key2 = values, key3 = rectPadding) {
+            DisposableEffect(width, values, rectPadding, currentHeight) {
                 maskCanvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
                 values.forEachIndexed { idx, factor ->
                     with(density) {
                         maskCanvas.drawRoundRect(
-                            (drawRLPadding + (rectPadding + rectWidth) * idx).toPx(),
-                            height.toPx() * ((1F - factor) / 2F),
-                            (drawRLPadding + (rectPadding + rectWidth) * idx + rectWidth).toPx(),
-                            height.toPx() - height.toPx() * ((1F - factor) / 2F),
+                            ((rectPadding + rectWidth) * idx).toPx(),
+                            currentHeight.toPx() * ((1F - factor) / 2F),
+                            ((rectPadding + rectWidth) * idx + rectWidth).toPx(),
+                            currentHeight.toPx() - currentHeight.toPx() * ((1F - factor) / 2F),
                             cornerRadius.toPx(),
                             cornerRadius.toPx(),
                             maskPaint
@@ -126,45 +142,49 @@ fun WaveForm(
 
                 }
             }
-            val rectBitmap = remember {
+            val rectBitmap = remember(currentHeight) {
                 Bitmap.createBitmap(
                     widthPx, heightPx, Bitmap.Config.ARGB_8888
                 )
             }
 
-            val rectCanvas = remember {
+            val rectCanvas = remember(currentHeight) {
                 android.graphics.Canvas(rectBitmap)
             }
 
-            val bufferBitmap = remember {
+            val bufferBitmap = remember(currentHeight) {
                 Bitmap.createBitmap(
                     widthPx, heightPx, Bitmap.Config.ARGB_8888
                 )
             }
 
-            val bufferCanvas = remember {
+            val bufferCanvas = remember(currentHeight) {
                 android.graphics.Canvas(bufferBitmap)
             }
 
+            val scaledWidth = remember(rectCount, rectPadding, width){
+                width-rectPadding*(rectCount-1)
+            }
+
+            val filledScaledWidth = remember(scaledWidth, filledPercent){
+                scaledWidth*filledPercent
+            }
+
             val filledRectanglesCount = (remember(filledPercent){
-                (width*filledPercent)/(rectWidth+rectPadding)
+                filledScaledWidth/rectWidth
             }).toInt()
 
-            val linesBeforeAdditionalWidth = remember(rectPadding, filledRectanglesCount){
+            val paddingAdditionalWidth = remember(rectPadding, filledRectanglesCount){
                 rectPadding * (filledRectanglesCount)
             }
 
-            val filledWidth = remember(filledPercent, rectCount, rectPadding, width){
-                (width-rectPadding*(rectCount-1))*filledPercent
-            }
-
-            DisposableEffect(key1 = filledPercent) {
+            DisposableEffect(key1 = filledPercent, key2 = currentHeight) {
                 rectCanvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
                 with(density) {
                     rectCanvas.drawRect(
-                        drawRLPadding.toPx(),
                         0F,
-                        (drawRLPadding + filledWidth + linesBeforeAdditionalWidth).toPx(),
+                        0F,
+                        (filledScaledWidth+paddingAdditionalWidth).toPx(),
                         heightPx.toFloat(),
                         fillPaint
                     )
@@ -176,12 +196,49 @@ fun WaveForm(
 
             Canvas(
                 modifier = Modifier
-                    .padding(
-                        start = drawRLPadding,
-                        end = drawRLPadding
-                    )
+                    .pointerInteropFilter {
+                        val position = (it.x).coerceIn(
+                            0F, widthPx.toFloat()
+                        ) / widthPx.toFloat()
+                        when (it.action) {
+                            MotionEvent.ACTION_DOWN -> {
+                                onTouchAction(
+                                    TouchAction.DownAction(
+                                        position = position
+                                    )
+                                )
+                                return@pointerInteropFilter true
+                            }
+                            MotionEvent.ACTION_MOVE -> {
+                                onTouchAction(
+                                    TouchAction.MoveAction(
+                                        position = position
+                                    )
+                                )
+                                return@pointerInteropFilter true
+                            }
+                            MotionEvent.ACTION_CANCEL -> {
+                                onTouchAction(
+                                    TouchAction.CancelAction
+                                )
+                                return@pointerInteropFilter true
+                            }
+                            MotionEvent.ACTION_UP -> {
+                                onTouchAction(
+                                    TouchAction.UpAction(
+                                        position = position
+                                    )
+                                )
+                                return@pointerInteropFilter true
+                            }
+                            else -> {
+                                return@pointerInteropFilter false
+                            }
+                        }
+                    }
                     .fillMaxSize()
             ) {
+                bufferCanvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
                 bufferCanvas.drawBitmap(rectBitmap, 0F, 0F, null)
                 bufferCanvas.drawBitmap(maskBitmap, 0F, 0F, rectBitmapPaint)
                 drawImage(

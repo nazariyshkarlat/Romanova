@@ -9,7 +9,7 @@ import com.tma.romanova.presentation.extensions.string
 import com.tma.romanova.presentation.feature.main.entity.MainScreenTrackItemUi
 import com.tma.romanova.presentation.feature.main.entity.NowPlayingTrackUi
 import com.tma.romanova.presentation.feature.main.entity.mainScreenTrackUi
-import com.tma.romanova.presentation.feature.main.entity.toNowPlayingTrackUi
+import com.tma.romanova.presentation.feature.main.entity.nowPlayingTrackUi
 
 sealed class MainScreenUiState {
 
@@ -56,7 +56,7 @@ sealed class MainScreenUiState {
                 AboutAuthorItem(
                     title = R.string.main_screen_about_author_title.str,
                     authorName = R.string.about_author_author_name.str,
-                    authorImage = R.mipmap.author_small.drawable,
+                    authorImage = R.mipmap.author.drawable,
                     goToIcon = R.drawable.ic_chevrone_right.drawable
                 )
             }
@@ -91,9 +91,7 @@ val MainScreenState.NowPlayingState.ui
 get() = when(this){
     is MainScreenState.NowPlayingState.AudioIsPlaying -> {
         MainScreenUiState.NowPlayingUiState.AudioIsPlaying(
-            nowPlayingTrackUi = track.toNowPlayingTrackUi(
-                isOnPause = isOnPause
-            )
+            nowPlayingTrackUi = track.nowPlayingTrackUi
         )
     }
     MainScreenState.NowPlayingState.NoAudioAvailable -> MainScreenUiState.NowPlayingUiState.NoAudioAvailable

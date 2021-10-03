@@ -27,4 +27,12 @@ abstract class BaseViewModel<State, UiState, Intent, ClientEvent, ClientAction, 
 
     protected abstract fun consumeIntent(intent: Intent)
 
+    open fun onStart(){
+
+    }
+
+    open fun onStop(){
+
+    }
+
 }

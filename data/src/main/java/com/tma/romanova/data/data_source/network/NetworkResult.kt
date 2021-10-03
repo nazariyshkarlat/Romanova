@@ -1,5 +1,7 @@
 package com.tma.romanova.data.data_source.network
 
+import com.tma.romanova.data.data_source.memory.MemoryResult
+import com.tma.romanova.data.data_source.memory.toResult
 import com.tma.romanova.domain.result.DataSourceType
 import java.lang.Exception
 import com.tma.romanova.domain.result.Result
@@ -17,3 +19,6 @@ fun <T: Any, R: Any>NetworkResult<T>.toResult(transformation: (T) -> R) : Result
     is NetworkResult.ServerError -> Result.ServerError(message = message, code = code)
     is NetworkResult.Success -> Result.Success(data = transformation(data), dataSourceType = DataSourceType.Network)
 }
+
+val <T: Any> NetworkResult<T>.result
+    get() = this.toResult { it }

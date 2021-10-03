@@ -1,10 +1,10 @@
 package com.tma.romanova.domain.state.feature.player.reducer
 
 import com.tma.romanova.domain.feature.playlist.entity.PlayingState
-import com.tma.romanova.domain.intent.MainScreenIntent
 import com.tma.romanova.domain.intent.PlayerIntent
+import com.tma.romanova.domain.intent.TouchStatus
 import com.tma.romanova.domain.mvi.Reducer
-import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
+import com.tma.romanova.domain.state.feature.player.DirectionPriority
 import com.tma.romanova.domain.state.feature.player.PlayerState
 import com.tma.romanova.domain.state.feature.player.WaveFormValuesStatus
 
@@ -15,8 +15,12 @@ fun PlayerReducer() =
                 when(intent){
                     is PlayerIntent.ShowTrack -> {
                         PlayerState.TrackIsPlaying(
-                            track = intent.track,
-                            waveFormValuesStatus = WaveFormValuesStatus.Loading
+                            currentTrack = intent.currentTrack,
+                            waveFormValuesStatus = WaveFormValuesStatus.Loading,
+                            allTracks = intent.allTracks,
+                            waveFormFilledPercent = 0F,
+                            waveFormLastTouchStartPosition = null,
+                            desiredCurrentTrack = null
                         )
                     }
                     is PlayerIntent.ShowPageLoadingError -> {
@@ -28,50 +32,74 @@ fun PlayerReducer() =
             }
             is PlayerState.TrackIsPlaying -> {
                 when (intent) {
-                    is PlayerIntent.ChangePosition -> {
+                    is PlayerIntent.MoveTrackToPosition -> {
                         currentState.copy(
-                            track = currentState.track.copy(
-                                playingState = when (currentState.track.playingState) {
-                                    PlayingState.IsNotPlaying -> currentState.track.playingState
-                                    is PlayingState.IsOnPause -> currentState.track.playingState.copy(
+                            waveFormLastTouchStartPosition =
+                            when {
+                                intent.isClickAction -> null
+                                else -> currentState.waveFormLastTouchStartPosition
+                            },
+                            currentTrack = currentState.currentTrack.copy(
+                                playingState = when (currentState.currentTrack.playingState) {
+                                    PlayingState.IsNotPlaying -> currentState.currentTrack.playingState
+                                    is PlayingState.IsOnPause -> currentState.currentTrack.playingState.copy(
                                         currentPositionMs = intent.newPositionMs
                                     )
-                                    is PlayingState.IsPlaying -> currentState.track.playingState.copy(
+                                    is PlayingState.IsPlaying -> currentState.currentTrack.playingState.copy(
                                         currentPositionMs = intent.newPositionMs
                                     )
                                 }
                             )
                         )
                     }
+                    is PlayerIntent.MoveWaveFormToPosition -> {
+                        if(!(currentState.timeLineIsPressed && intent.touchStatus == TouchStatus.IsNotTouch)) {
+                            currentState.copy(
+                                waveFormFilledPercent = intent.playedPercent,
+                                waveFormLastTouchStartPosition =
+                                when {
+                                    intent.touchStatus.isDownActionVal  -> currentState.waveFormFilledPercent
+                                    else -> currentState.waveFormLastTouchStartPosition
+                                }
+                            )
+                        }else currentState
+                    }
+                    PlayerIntent.MoveWaveFormToStartTouchPosition -> {
+                        currentState.copy(
+                            waveFormFilledPercent =
+                            currentState.waveFormLastTouchStartPosition
+                                ?: currentState.waveFormFilledPercent
+                        )
+                    }
                     PlayerIntent.DislikeTrack -> currentState.copy(
-                        track = currentState.track.copy(
+                        currentTrack = currentState.currentTrack.copy(
                             isLiked = false
                         )
                     )
                     PlayerIntent.LikeTrack -> currentState.copy(
-                        track = currentState.track.copy(
+                        currentTrack = currentState.currentTrack.copy(
                             isLiked = true
                         )
                     )
                     PlayerIntent.PauseTrack -> currentState.copy(
-                        track = currentState.track.copy(
-                            playingState = when (currentState.track.playingState) {
-                                PlayingState.IsNotPlaying -> currentState.track.playingState
-                                is PlayingState.IsOnPause -> currentState.track.playingState
+                        currentTrack = currentState.currentTrack.copy(
+                            playingState = when (currentState.currentTrack.playingState) {
+                                PlayingState.IsNotPlaying -> currentState.currentTrack.playingState
+                                is PlayingState.IsOnPause -> currentState.currentTrack.playingState
                                 is PlayingState.IsPlaying -> PlayingState.IsOnPause(
-                                    currentPositionMs = currentState.track.playingState.currentPositionMs
+                                    currentPositionMs = currentState.currentTrack.playingState.currentPositionMs
                                 )
                             }
                         )
                     )
                     PlayerIntent.ResumeTrack -> currentState.copy(
-                        track = currentState.track.copy(
-                            playingState = when (currentState.track.playingState) {
-                                PlayingState.IsNotPlaying -> currentState.track.playingState
+                        currentTrack = currentState.currentTrack.copy(
+                            playingState = when (currentState.currentTrack.playingState) {
+                                PlayingState.IsNotPlaying -> currentState.currentTrack.playingState
                                 is PlayingState.IsOnPause -> PlayingState.IsPlaying(
-                                    currentPositionMs = currentState.track.playingState.currentPositionMs
+                                    currentPositionMs = currentState.currentTrack.playingState.currentPositionMs
                                 )
-                                is PlayingState.IsPlaying -> currentState.track.playingState
+                                is PlayingState.IsPlaying -> currentState.currentTrack.playingState
                             }
                         )
                     )
@@ -80,8 +108,22 @@ fun PlayerReducer() =
                     }
                     is PlayerIntent.ShowTrack -> {
                         PlayerState.TrackIsPlaying(
-                            track = intent.track,
-                            waveFormValuesStatus = WaveFormValuesStatus.Loading
+                            currentTrack = intent.currentTrack,
+                            waveFormValuesStatus = WaveFormValuesStatus.Loading,
+                            allTracks = intent.allTracks,
+                            waveFormLastTouchStartPosition = null,
+                            waveFormFilledPercent = 0F,
+                            desiredCurrentTrack = null
+                        )
+                    }
+                    is PlayerIntent.NavigateToNextTrack -> {
+                        currentState.copy(
+                            desiredCurrentTrack = currentState.allTracks.first { it.id == intent.trackId } to DirectionPriority.Right
+                        )
+                    }
+                    is PlayerIntent.NavigateToPreviousTrack -> {
+                        currentState.copy(
+                            desiredCurrentTrack = currentState.allTracks.first { it.id == intent.trackId } to DirectionPriority.Left
                         )
                     }
                     is PlayerIntent.DownloadWaveFormValues -> {

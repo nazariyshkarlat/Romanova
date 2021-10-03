@@ -7,13 +7,20 @@ import org.koin.core.qualifier.named
 val playerDataSourceProviderQualifier = named("player_data_source_provider")
 val playerDataSourceQualifier = named("player_data_source")
 
-val tracksMemoryStorageQualifier = named("tracks_memory_storage")
-val trackDataStoreQualifier = named("track_data_store")
-val trackDataStoreProviderQualifier = named("track_data_store_provider")
 val trackDataSourceQualifier = named("track_data_source")
 val trackDataSourceProviderQualifier = named("track_data_source_provider")
+
 val playlistDataSourceQualifier = named("playlist_data_source")
 val playlistDataSourceProviderQualifier = named("playlist_data_source_provider")
+val playlistsMemoryStorageQualifier = named("playlists_memory_storage")
+val playlistDataStoreQualifier = named("playlist_data_store")
+val playlistDataStoreProviderQualifier = named("playlist_data_store_provider")
+
+val nowPlayingTrackCacheStorageQualifier = named("now_playing_track_cache_storage")
+val nowPlayingTrackDataStoreQualifier = named("now_playing_track_data_store")
+val nowPlayingTrackDataStoreProviderQualifier = named("now_playing_track_data_store_provider")
+val nowPlayingTrackDataSourceQualifier = named("now_playing_track_data_source")
+val nowPlayingTrackDataSourceProviderQualifier = named("now_playing_track_data_source_provider")
 
 val application: Application
 get() = _application!!

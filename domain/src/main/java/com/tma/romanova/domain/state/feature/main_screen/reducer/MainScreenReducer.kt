@@ -30,29 +30,17 @@ fun MainScreenReducer() =
                 when(currentState){
                     is MainScreenState.PlaylistIsLoading -> currentState.copy(
                         nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
-                            track = intent.track.copy(
-                                playingState = PlayingState.IsOnPause(
-                                    currentPositionMs = intent.track.playingState.positionMs ?: 0L
-                                )
-                            )
+                            track = intent.track
                         )
                     )
                     is MainScreenState.PlaylistLoadingError -> currentState.copy(
                         nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
-                            track = intent.track.copy(
-                                playingState = PlayingState.IsOnPause(
-                                    currentPositionMs = intent.track.playingState.positionMs ?: 0L
-                                )
-                            )
+                            track = intent.track
                         )
                     )
                     is MainScreenState.PlaylistLoadingSuccess -> currentState.copy(
                         nowPlayingState = MainScreenState.NowPlayingState.AudioIsPlaying(
-                            track = intent.track.copy(
-                                playingState = PlayingState.IsOnPause(
-                                    currentPositionMs = intent.track.playingState.positionMs ?: 0L
-                                )
-                            )
+                            track = intent.track
                         )
                     )
                 }

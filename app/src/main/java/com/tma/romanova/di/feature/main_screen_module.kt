@@ -18,7 +18,8 @@ val mainScreenModule = module {
     viewModel {
         MainScreenViewModel(
             playlistInteractor = get(),
-            nowPlayingTrackInteractor = get()
+            nowPlayingTrackInteractor = get(),
+            trackStreamInteractor = get()
         )
     }
     single {

@@ -20,13 +20,16 @@ class TrackStreamInteractorImpl(
     private val playlistRepository: PlaylistRepository,
     private val nowPlayingTrackRepository: NowPlayingTrackRepository
     ) : TrackStreamInteractor{
-    override val currentTrackPlayTime: StreamActionResult<Flow<Long>>
+    override val currentTrackPlayTime: Flow<Long>
     get() = trackStreamRepository.currentTrackPlayTime
 
     private var currentPlayingTrack: Track? = null
 
     override val currentPlayingTrackId: StreamActionResult<Int>
         get() = trackStreamRepository.currentPlayingTrackId
+
+    override val lastPlayingTrack: Track?
+        get() = trackStreamRepository.lastPlayingTrack
 
     private suspend fun playlistTracks(): List<Track>{
        return (playlistRepository.getPlaylist() as? Result.Success)?.data?.tracks
@@ -69,13 +72,11 @@ class TrackStreamInteractorImpl(
                 if(withPlaying) PrepareTrackEvent.PrepareStartWithPlaying
                 else PrepareTrackEvent.PrepareStart
             )
+            nowPlayingTrackRepository.saveNowPlayingTrack(track = track)
             trackStreamRepository.preparePlaylist(
                 track = track,
                 withPlaying = withPlaying
-            ).collect {
-                if(it is Result.Success){
-                    nowPlayingTrackRepository.saveNowPlayingTrack(track = track)
-                }
+            ).collect{
                 emit(it.prepareTrackEvent)
             }
     }.also {
@@ -114,9 +115,10 @@ class TrackStreamInteractorImpl(
 }
 
 interface TrackStreamInteractor {
-    val currentTrackPlayTime: StreamActionResult<Flow<Long>>
+    val currentTrackPlayTime: Flow<Long>
     val durationMs: StreamActionResult<Long?>
     val playingEvent: Flow<PlayingEvent>
+    val lastPlayingTrack: Track?
     val currentPlayingTrackId: StreamActionResult<Int>
 
     fun prepareTrack(track: Track, withPlaying: Boolean): Flow<PrepareTrackEvent>

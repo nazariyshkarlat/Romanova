@@ -56,6 +56,9 @@ val nowPlayingModule = module{
     } bind DataSourceProvider::class
 
     single {
-        NowPlayingTrackInteractorImpl(get())
+        NowPlayingTrackInteractorImpl(
+            nowPlayingTrackRepository = get(),
+            trackStreamRepository = get()
+        )
     } bind NowPlayingTrackInteractor::class
 }

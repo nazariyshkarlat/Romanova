@@ -16,11 +16,11 @@ import com.tma.romanova.domain.intent.PlayerIntent
 import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.domain.state.feature.player.PlayerState
 import com.tma.romanova.domain.state.feature.player.reducer.PlayerReducer
+import com.tma.romanova.presentation.extensions.launchImmediately
 import com.tma.romanova.presentation.feature.player.state.PlayerUiState
 import com.tma.romanova.presentation.feature.player.state.ui
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.*
 import org.koin.core.component.KoinComponent
 import java.lang.Exception
 
@@ -47,6 +47,7 @@ class PlayerViewModel(
             internalEvent = PlayerEvent.PageOpen(trackId = trackId)
         )
         observeStreamEvents()
+        observePlayingPosition()
     }
     override fun onCleared() {
         super.onCleared()
@@ -97,12 +98,6 @@ class PlayerViewModel(
             PlayerIntent.DownPlayingTime -> {
                 downPlayingTime()
             }
-            PlayerIntent.SaveNowPlayingTrack -> {
-                saveNowPlayingTrack()
-            }
-            is PlayerIntent.PlayerPrepared -> {
-                observePlayingPosition()
-            }
             else -> Unit
         }
         _events.tryEmit(PlayerEventHandler().invoke(state.value, intent))
@@ -111,16 +106,31 @@ class PlayerViewModel(
 
     private fun onLoadPage(trackId: Int) {
         coroutineScope.launch(Dispatchers.IO) {
+            var nowPlayingTrack = nowPlayingTrackInteractor.getNowPlayingTrackVal()
+
             this@PlayerViewModel.trackId = trackId
-            if (currentPlayingTrackId != trackId) {
+            if ((currentPlayingTrackId != trackId &&
+                    nowPlayingTrack?.id != trackId) ||
+                    nowPlayingTrack == null) {
                 withContext(Dispatchers.Main) {
                     reloadTrack(trackId = trackId)
                 }
             } else {
+
+                trackStreamInteractor.lastPlayingTrack?.let{
+                    nowPlayingTrack = it
+                }
+                consumeInternalEvent(
+                    GetNowPlayingTrackEvent.NowPlayingTrackFound(
+                        track = nowPlayingTrack!!
+                    ).playerEvent
+                )
+
                 coroutineScope.launch(Dispatchers.IO) {
-                    nowPlayingTrackInteractor.getNowPlayingTrack().collect {
-                        consumeInternalEvent(
-                            it.playerEvent
+                    if(state.value !is PlayerState.TrackIsPlaying) {
+                        loadTrack(
+                            trackId = trackId,
+                            nowPlayingTrack = nowPlayingTrack
                         )
                     }
                 }
@@ -133,8 +143,10 @@ class PlayerViewModel(
             completableJob.cancelChildren()
         } catch (e: Exception) { }
         trackStreamInteractor.closeStream()
-        println("load track!!!")
-        loadTrack(trackId = trackId)
+        loadTrack(
+            trackId = trackId,
+            nowPlayingTrack = null
+        )
     }
 
     private fun prepareTrackAndPlay(track: Track){
@@ -146,16 +158,6 @@ class PlayerViewModel(
                 withContext(Dispatchers.Main) {
                     consumeInternalEvent(it.playerEvent)
                 }
-            }
-        }
-    }
-
-    private fun saveNowPlayingTrack(){
-        state.value.currentTrackNullable?.let {
-            GlobalScope.launch(Dispatchers.IO) {
-                nowPlayingTrackInteractor.saveNowPlayingTrack(
-                    track = it
-                )
             }
         }
     }
@@ -178,10 +180,20 @@ class PlayerViewModel(
         }
     }
 
-    private fun loadTrack(trackId: Int){
+    private fun loadTrack(trackId: Int, nowPlayingTrack: Track?){
+        println(nowPlayingTrack)
         coroutineScope.launch(Dispatchers.IO) {
             playlistInteractor.getPlaylist()
-                .combine(playlistInteractor.getTrack(trackId = trackId)) { playlistRes, trackRes->
+                .combine(
+                    if(nowPlayingTrack != null) flow {
+                        emit(
+                            GetNowPlayingTrackEvent.NowPlayingTrackFound(
+                                track = nowPlayingTrack
+                            ).getTrackEvent
+                        )
+                    }
+                    else playlistInteractor.getTrack(trackId = trackId)
+                ) { playlistRes: GetPlaylistEvent, trackRes: GetTrackEvent->
                     consumeInternalEvent((trackRes to playlistRes).playerEvent)
                 }.collect()
         }
@@ -210,23 +222,16 @@ class PlayerViewModel(
     }
 
     private fun observePlayingPosition(){
-        trackStreamInteractor.currentTrackPlayTime.ifInitialized {
-            trackStreamInteractor.durationMs.ifInitialized {
-                this?.let { duration ->
-                    coroutineScope.launch(Dispatchers.IO) {
-                        collect { ms ->
-                            ms.let {
-                                consumeInternalEvent(
-                                    PlayerEvent.NeedsChangeTrackPosition(
-                                        newPosition = ms / duration.toFloat()
-                                    )
+        viewModelScope.launch(Dispatchers.IO) {
+            trackStreamInteractor.currentTrackPlayTime.collect { ms ->
+                withContext(Dispatchers.Main){
+                    trackStreamInteractor.durationMs.ifInitialized {
+                        this?.let { duration ->
+                            consumeInternalEvent(
+                                PlayerEvent.NeedsChangeTimeLinePosition(
+                                    newPosition = ms / duration.toFloat()
                                 )
-                                consumeInternalEvent(
-                                    PlayerEvent.NeedsChangeTimeLinePosition(
-                                        newPosition = ms / duration.toFloat()
-                                    )
-                                )
-                            }
+                            )
                         }
                     }
                 }
@@ -282,7 +287,9 @@ class PlayerViewModel(
     }
 
     override fun onStop(){
-        saveNowPlayingTrack()
+/*        consumeClientAction(
+            action = PlayerClientAction.AppClose
+        )*/
     }
 
 }

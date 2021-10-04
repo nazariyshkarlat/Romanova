@@ -24,7 +24,12 @@ class NowPlayingTrackRepositoryImpl(
             DataSourceType.Cache -> {
                 nowPlayingTrackDataSource.getFromCache(
                     GetNowPlayingTrackCacheRequest()
-                ).result
+                ).result.also {
+                    println(it)
+                    (it as? Result.Success)?.let{
+                        println("get from cache ${it.data.title} ${it.data.playingState.positionMs}")
+                    }
+                }
             }
             DataSourceType.Network -> TODO()
             DataSourceType.Memory -> TODO()
@@ -34,6 +39,7 @@ class NowPlayingTrackRepositoryImpl(
     override suspend fun saveNowPlayingTrack(track: Track) {
         when(nowPlayingTrackDataStoreProvider.sourceType){
             DataSourceType.Cache -> {
+                println("save to cache ${track.title} ${track.playingState.positionMs}")
                 nowPlayingTrackDataStore.saveToCache(
                     SaveNowPlayingTrackCacheRequest(
                         track = track

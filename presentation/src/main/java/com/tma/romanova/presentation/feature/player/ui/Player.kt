@@ -204,6 +204,7 @@ fun Player(
                     authorName = PlayerUiState.authorName
                 )
 
+                println(state.playedPercent)
                 WaveForm(
                     modifier = Modifier
                         .constrainAs(waveForm) {
@@ -233,7 +234,7 @@ fun Player(
                 ButtonsBar(
                     modifier = Modifier
                         .constrainAs(buttonsBar) {
-                            bottom.linkTo(parent.bottom, margin = 4.dp)
+                            bottom.linkTo(parent.bottom, margin = 20.dp)
                             start.linkTo(parent.start, margin = LayoutLargeRLPadding)
                             end.linkTo(parent.end, margin = LayoutLargeRLPadding)
                             width = Dimension.fillToConstraints

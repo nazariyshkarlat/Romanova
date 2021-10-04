@@ -18,9 +18,10 @@ fun PlayerReducer() =
                             currentTrack = intent.currentTrack,
                             waveFormValuesStatus = WaveFormValuesStatus.Loading,
                             allTracks = intent.allTracks,
-                            waveFormFilledPercent = 0F,
                             waveFormLastTouchStartPosition = null,
-                            desiredCurrentTrack = null
+                            desiredCurrentTrack = null,
+                            waveFormFilledPercent =
+                            (intent.currentTrack.playingState.positionMs ?: 0L)/intent.currentTrack.duration.toFloat()
                         )
                     }
                     is PlayerIntent.ShowPageLoadingError -> {
@@ -107,12 +108,14 @@ fun PlayerReducer() =
                         PlayerState.Loading
                     }
                     is PlayerIntent.ShowTrack -> {
+                        println(intent.currentTrack.playingState.positionMs)
                         PlayerState.TrackIsPlaying(
                             currentTrack = intent.currentTrack,
                             waveFormValuesStatus = WaveFormValuesStatus.Loading,
                             allTracks = intent.allTracks,
                             waveFormLastTouchStartPosition = null,
-                            waveFormFilledPercent = 0F,
+                            waveFormFilledPercent =
+                            (intent.currentTrack.playingState.positionMs ?: 0L)/intent.currentTrack.duration.toFloat(),
                             desiredCurrentTrack = null
                         )
                     }

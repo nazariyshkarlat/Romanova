@@ -19,7 +19,7 @@ sealed interface MainScreenIntent {
     data class GoToTrackComments(val trackId: Int) : MainScreenIntent
     object GoToAboutAuthorScreen : MainScreenIntent
     data class UpdateNowPlayingTrack(val track: Track) : MainScreenIntent
-
+    object GetNowPlayingTrack : MainScreenIntent
     data class GoToPlayerScreen(val track: Track) : MainScreenIntent
     data class GoToNowPlayingTrackPlayerScreen(val track: Track) : MainScreenIntent
     data class PauseNowPlayingTrack(val track: Track) : MainScreenIntent

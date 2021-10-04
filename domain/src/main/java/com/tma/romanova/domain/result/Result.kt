@@ -1,6 +1,10 @@
 package com.tma.romanova.domain.result
 
 sealed class Result<out T: Any> {
+
+    val dataVal
+    get() = (this as? Success<T>)?.data
+
     data class Success<T : Any>(val data: T, val dataSourceType: DataSourceType) : Result<T>()
     data class ServerError(val code: Int, val message: String?) : Result<Nothing>()
     data class LocalException(val cause: Exception) : Result<Nothing>()
@@ -9,7 +13,7 @@ sealed class Result<out T: Any> {
 }
 
 fun <T: Any, R: Any>Result<T>.map(
-    mapSuccess: (Result.Success<T>) -> R
+    mapSuccess: (T) -> R
 ): Result<R> =
     when(this){
         Result.CacheIsEmpty -> Result.CacheIsEmpty
@@ -22,7 +26,7 @@ fun <T: Any, R: Any>Result<T>.map(
             message = message
         )
         is Result.Success -> Result.Success(
-            data = mapSuccess(this),
+            data = mapSuccess(this.data),
             dataSourceType = dataSourceType
         )
     }

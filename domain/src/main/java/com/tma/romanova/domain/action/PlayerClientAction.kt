@@ -48,7 +48,7 @@ fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
                     playerState.allTracks.indexOfFirst {
                         it.id == playerState.currentTrack.id
                     }+1
-                ).id.also { println(it) }
+                ).id
             )
         }else Intent.DoNothing
     }

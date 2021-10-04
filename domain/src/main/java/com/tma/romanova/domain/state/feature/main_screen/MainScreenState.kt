@@ -10,7 +10,7 @@ sealed class MainScreenState {
     abstract val nowPlayingState: NowPlayingState
 
 
-    val currentTrackNullable
+    val currentTrackVal
         get() = when(val state = this.nowPlayingState){
             is NowPlayingState.AudioIsPlaying -> state.track
             NowPlayingState.NoAudioAvailable -> null

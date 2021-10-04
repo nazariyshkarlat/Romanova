@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -19,6 +20,7 @@ import com.tma.romanova.domain.navigation.NavigationDirections
 import com.tma.romanova.domain.navigation.NavigationDirections.Player.Arguments.TRACK_ID
 import com.tma.romanova.domain.navigation.NavigationManager
 import com.tma.romanova.domain.navigation.NavigationManager.startDirection
+import com.tma.romanova.presentation.base.BaseViewModel
 import com.tma.romanova.presentation.extensions.*
 import com.tma.romanova.presentation.feature.about_author.AboutAuthor
 import com.tma.romanova.presentation.feature.main.ui.MainScreen
@@ -28,12 +30,15 @@ import com.tma.romanova.presentation.feature.onboarding.view_model.OnBoardingVie
 import com.tma.romanova.presentation.feature.player.ui.Player
 import com.tma.romanova.presentation.feature.player.view_model.PlayerViewModel
 import com.tma.romanova.presentation.theme.AppTheme
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.getViewModel
 import org.koin.core.parameter.parametersOf
 
 class MainActivity : ComponentActivity() {
+
+    private val nowPlayingTrackInteractor: NowPlayingTrackInteractor by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +49,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+
+        GlobalScope.launchImmediately {
+            nowPlayingTrackInteractor.saveNowPlayingTrack()
+        }
+
+        super.onSaveInstanceState(outState)
+
     }
 
     @Composable
@@ -84,12 +99,6 @@ class MainActivity : ComponentActivity() {
                     EnterAnimation {
                         MainScreen(viewModel = viewModel)
                     }
-
-                    DisposableEffect(key1 = viewModel){
-                        onDispose {
-                            viewModel.onStop()
-                        }
-                    }
                 }
 
                 composable(NavigationDirections.AboutAuthor.route){ backStackEntry ->
@@ -117,12 +126,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         Player(viewModel = viewModel)
-
-                        DisposableEffect(key1 = viewModel){
-                            onDispose {
-                                viewModel.onStop()
-                            }
-                        }
                     }
                 }
 

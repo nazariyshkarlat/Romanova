@@ -4,14 +4,13 @@ import com.google.android.exoplayer2.*
 import com.tma.romanova.core.application
 import com.tma.romanova.domain.feature.track_stream.PlayingEvent
 import com.tma.romanova.domain.feature.track_stream.Stream
+import com.tma.romanova.domain.feature.track_stream._currentPlayMsTimeFlow
 import com.tma.romanova.domain.feature.track_stream._playingEvent
 import com.tma.romanova.domain.result.DataSourceType
 import com.tma.romanova.domain.result.Result
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.flowOn
 import kotlin.coroutines.CoroutineContext
@@ -26,6 +25,8 @@ class NetworkStream(
     companion object{
         const val PREPARE_RETRY_COUNT = 3
     }
+
+    private val channelScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
     private var listener: Player.Listener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -50,32 +51,27 @@ class NetworkStream(
         }
     }
 
-    private var channelScope: ProducerScope<Long>? = null
-
     private var actionsScope: CoroutineContext? = null
 
-    override val currentPlayMsTimeFlow: Flow<Long>
-    get() = callbackFlow{
-        channelScope = this
-        while (true) {
-            kotlinx.coroutines.delay(100)
-            if (mediaPlayer?.isPlaying == true) {
-                val mediaPlayer = mediaPlayer
-                if (mediaPlayer != null) {
-                    if(mediaPlayer.currentPosition <= mediaPlayer.duration) {
-                        trySend(
-                            mediaPlayer.currentPosition
-                        )
-                    }
-                } else {
-                    close()
-                    break
+    init {
+        channelScope.launch {
+            while (true) {
+                delay(100)
+                if (mediaPlayer?.isPlaying == true) {
+                    val mediaPlayer = mediaPlayer
+                    if (mediaPlayer != null) {
+                        if (mediaPlayer.currentPosition <= mediaPlayer.duration) {
+                            println(mediaPlayer.currentPosition)
+                            _currentPlayMsTimeFlow.emit(
+                                mediaPlayer.currentPosition
+                            )
+                        }
+                    } else {
+                        break
 
+                    }
                 }
             }
-        }
-        awaitClose{
-
         }
     }
 
@@ -103,7 +99,10 @@ class NetworkStream(
             )
         }
 
-    override fun prepareAudio(playWhenPrepared: Boolean): Flow<Result<Unit>>{
+    override fun prepareAudio(
+        playWhenPrepared: Boolean,
+        startPositionInMillis: Long,
+    ): Flow<Result<Unit>>{
         return callbackFlow {
 
             actionsScope?.cancel()
@@ -169,7 +168,7 @@ class NetworkStream(
                     player.clearMediaItems()
                     val mediaItem = MediaItem.fromUri(url)
                     player.setMediaItem(mediaItem)
-                    player.seekTo(0, 0)
+                    player.seekTo(0, startPositionInMillis)
                     player.prepare()
                 }
                 awaitClose {
@@ -265,7 +264,7 @@ class NetworkStream(
             try {
                 it!!.addListener(listener)
                 it.seekTo(ms)
-                channelScope?.trySend(
+                _currentPlayMsTimeFlow.tryEmit(
                     ms
                 )
             }catch (e: Exception){
@@ -284,7 +283,7 @@ class NetworkStream(
     }.flowOn(Dispatchers.Main)
 
     override fun closeStream(){
-        channelScope?.cancel()
+        channelScope.cancel()
         actionsScope?.cancel()
         mediaPlayer?.stop()
         try{

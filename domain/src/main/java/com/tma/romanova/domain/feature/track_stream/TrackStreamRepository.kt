@@ -12,9 +12,10 @@ interface TrackStreamRepository {
     }
 
     val playingEvent: Flow<PlayingEvent>
-    val currentTrackPlayTime: StreamActionResult<Flow<Long>>
+    val currentTrackPlayTime: Flow<Long>
     val duration: StreamActionResult<Result<Long>>
     val currentPlayingTrackId: StreamActionResult<Int>
+    val lastPlayingTrack: Track?
 
     fun preparePlaylist(track: Track, withPlaying: Boolean): Flow<Result<Unit>>
     fun playTrack(): StreamActionResult<Flow<Result<Unit>>>
@@ -29,6 +30,9 @@ sealed class StreamActionResult<out T>{
 
     val initializedOrNull: T?
     get() = (this as? IsInitialized)?.result
+
+    val notNull
+    get() = initializedOrNull != null
 
     object StreamNotInitialized: StreamActionResult<Nothing>()
     data class IsInitialized<T>(val result: T) : StreamActionResult<T>()

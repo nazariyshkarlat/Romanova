@@ -63,7 +63,7 @@ fun PlayerEvent.toIntent(state: PlayerState) = when(this){
             PlayerIntent.ShowTrack(
                 currentTrack = track.copy(
                     playingState = PlayingState.IsPlaying(
-                        currentPositionMs = 0L
+                        currentPositionMs = track.playingState.positionMs ?: 0L
                     )
                 ),
                 allTracks = state.allTracks

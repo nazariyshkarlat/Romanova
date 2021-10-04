@@ -24,6 +24,7 @@ abstract class CacheStorage<T: Any>(val clazz: KClass<T>): KoinComponent {
     fun setSingleElement(data: T, id: String): CacheResult<T> {
         (cache to key).clear<T>(clazz)
         val result = (cache to key).add(CacheElement(id = id, data = data), clazz = clazz)
+        println((cache to key).all(clazz = clazz))
         return CacheResult.Success(data = result.map { it.data }.first())
     }
 

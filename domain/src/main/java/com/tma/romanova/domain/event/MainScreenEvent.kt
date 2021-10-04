@@ -22,7 +22,7 @@ get() = when(this){
     is MainScreenEvent.PlaylistLoadingError -> MainScreenIntent.ShowPageLoadingError(errorCause = errorCause)
     MainScreenEvent.PlaylistLoadingStart -> MainScreenIntent.ShowPageIsLoading
     is MainScreenEvent.PlaylistLoadingSuccess -> MainScreenIntent.ShowPlaylist(playlist = playlist)
-    Event.DoNothing -> Intent.DoNothing
+    Event.NothingHappened -> Intent.DoNothing
     MainScreenEvent.PageOpen -> MainScreenIntent.LoadData
     MainScreenEvent.NowPlayingTrackNotFound -> Intent.DoNothing
     is MainScreenEvent.NowPlayingTrackReceived -> MainScreenIntent.UpdateNowPlayingTrack(track = track)
@@ -33,8 +33,8 @@ get() = when(this){
     is GetPlaylistEvent.PlaylistFound -> {
         MainScreenEvent.PlaylistLoadingSuccess(playlist = playlist)
     }
-    GetPlaylistEvent.PlaylistNotFound -> Event.DoNothing
-    ResponseEvent.DoNothing -> Event.DoNothing
+    GetPlaylistEvent.PlaylistNotFound -> Event.NothingHappened
+    ResponseEvent.DoNothing -> Event.NothingHappened
     is ResponseEvent.Exception -> MainScreenEvent.PlaylistLoadingError(
         errorCause = this.errorCase
     )
@@ -55,7 +55,7 @@ val GetNowPlayingTrackEvent.mainScreenEvent: MainScreenEvent
         is GetNowPlayingTrackEvent.NowPlayingTrackFound -> {
             MainScreenEvent.NowPlayingTrackReceived(track = track)
         }
-        ResponseEvent.DoNothing -> Event.DoNothing
+        ResponseEvent.DoNothing -> Event.NothingHappened
         is ResponseEvent.Exception -> MainScreenEvent.PlaylistLoadingError(
             errorCause = this.errorCase
         )

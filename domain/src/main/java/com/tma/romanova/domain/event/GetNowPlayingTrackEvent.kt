@@ -22,3 +22,16 @@ val Result<Track>.getNowPlayingTrackEvent
         )
         is Result.Success -> GetNowPlayingTrackEvent.NowPlayingTrackFound(track = this.data)
     }
+
+val GetNowPlayingTrackEvent.getTrackEvent
+get(): GetTrackEvent = when(this){
+    is GetNowPlayingTrackEvent.NowPlayingTrackFound -> GetTrackEvent.TrackFound(
+        track = track
+    )
+    GetNowPlayingTrackEvent.NowPlayingTrackNotFound -> GetTrackEvent.TrackNotFound
+    ResponseEvent.DoNothing -> ResponseEvent.Loading
+    is ResponseEvent.Exception -> this
+    ResponseEvent.Loading -> ResponseEvent.Loading
+    ResponseEvent.NetworkUnavailable -> ResponseEvent.Loading
+    is ResponseEvent.ServerError -> this
+}

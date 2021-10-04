@@ -1,6 +1,6 @@
 package com.tma.romanova.presentation.feature.player.view_model
 
-import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.viewModelScope
 import com.tma.romanova.domain.action.PlayerClientAction
 import com.tma.romanova.domain.action.toIntent
 import com.tma.romanova.domain.event.*
@@ -22,8 +22,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.parameter.parametersOf
 import java.lang.Exception
 
 class PlayerViewModel(
@@ -41,10 +39,14 @@ class PlayerViewModel(
     private val completableJob = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + completableJob)
 
+    private val currentPlayingTrackId
+    get() = trackStreamInteractor.currentPlayingTrackId.initializedOrNull
+
     init {
         consumeInternalEvent(
             internalEvent = PlayerEvent.PageOpen(trackId = trackId)
         )
+        observeStreamEvents()
     }
     override fun onCleared() {
         super.onCleared()
@@ -62,13 +64,8 @@ class PlayerViewModel(
     override fun consumeIntent(intent: PlayerIntent) {
         when(intent){
             Intent.DoNothing -> Unit
-            is PlayerIntent.LoadTrack -> {
-                try{
-                    completableJob.cancelChildren()
-                }catch (e: Exception){}
-                trackId = intent.trackId
-                trackStreamInteractor.closeStream()
-                loadTrack(trackId = intent.trackId)
+            is PlayerIntent.UpdateTrack -> {
+                onLoadPage(trackId = intent.trackId)
             }
             PlayerIntent.NavigateBack -> {
                 NavigationManager.navigateBack()
@@ -85,7 +82,8 @@ class PlayerViewModel(
                 )
             }
             is PlayerIntent.ShowTrack -> {
-                prepareTrackAndPlay(track = intent.currentTrack)
+                if(currentPlayingTrackId != intent.currentTrack.id)
+                    prepareTrackAndPlay(track = intent.currentTrack)
             }
             PlayerIntent.PauseTrack -> {
                 pauseTrack()
@@ -103,33 +101,40 @@ class PlayerViewModel(
                 saveNowPlayingTrack()
             }
             is PlayerIntent.PlayerPrepared -> {
-                trackStreamInteractor.currentTrackPlayTime.ifInitialized {
-                        trackStreamInteractor.durationMs.ifInitialized {
-                            this?.let { duration ->
-                                coroutineScope.launch(Dispatchers.IO) {
-                                    collect { ms ->
-                                        ms.let {
-                                            consumeInternalEvent(
-                                                PlayerEvent.NeedsChangeTrackPosition(
-                                                    newPosition = ms / duration.toFloat()
-                                                )
-                                            )
-                                            consumeInternalEvent(
-                                                PlayerEvent.NeedsChangeTimeLinePosition(
-                                                    newPosition = ms / duration.toFloat()
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                }
+                observePlayingPosition()
             }
             else -> Unit
         }
         _events.tryEmit(PlayerEventHandler().invoke(state.value, intent))
         state.value = PlayerReducer().invoke(state.value, intent)
+    }
+
+    private fun onLoadPage(trackId: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            this@PlayerViewModel.trackId = trackId
+            if (currentPlayingTrackId != trackId) {
+                withContext(Dispatchers.Main) {
+                    reloadTrack(trackId = trackId)
+                }
+            } else {
+                coroutineScope.launch(Dispatchers.IO) {
+                    nowPlayingTrackInteractor.getNowPlayingTrack().collect {
+                        consumeInternalEvent(
+                            it.playerEvent
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun reloadTrack(trackId: Int){
+        try {
+            completableJob.cancelChildren()
+        } catch (e: Exception) { }
+        trackStreamInteractor.closeStream()
+        println("load track!!!")
+        loadTrack(trackId = trackId)
     }
 
     private fun prepareTrackAndPlay(track: Track){
@@ -188,6 +193,41 @@ class PlayerViewModel(
                 collect {
                     withContext(Dispatchers.Main) {
                         consumeInternalEvent(it.playerEvent)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeStreamEvents(){
+        viewModelScope.launch(Dispatchers.IO) {
+            trackStreamInteractor.playingEvent.collect {
+                withContext(Dispatchers.Main){
+                    consumeInternalEvent(it.playerEvent)
+                }
+            }
+        }
+    }
+
+    private fun observePlayingPosition(){
+        trackStreamInteractor.currentTrackPlayTime.ifInitialized {
+            trackStreamInteractor.durationMs.ifInitialized {
+                this?.let { duration ->
+                    coroutineScope.launch(Dispatchers.IO) {
+                        collect { ms ->
+                            ms.let {
+                                consumeInternalEvent(
+                                    PlayerEvent.NeedsChangeTrackPosition(
+                                        newPosition = ms / duration.toFloat()
+                                    )
+                                )
+                                consumeInternalEvent(
+                                    PlayerEvent.NeedsChangeTimeLinePosition(
+                                        newPosition = ms / duration.toFloat()
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }

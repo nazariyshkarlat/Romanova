@@ -11,7 +11,7 @@ sealed interface MoveToPositionTrackEvent {
 
 val Result<Long>.moveToPositionTrackEvent: MoveToPositionTrackEvent
     get() = when(this){
-        Result.CacheIsEmpty -> Event.DoNothing
+        Result.CacheIsEmpty -> Event.NothingHappened
         is Result.LocalException -> MoveToPositionTrackEvent.MoveToPositionTrackError
         Result.NetworkError -> MoveToPositionTrackEvent.MoveToPositionTrackError
         is Result.ServerError -> MoveToPositionTrackEvent.MoveToPositionTrackError

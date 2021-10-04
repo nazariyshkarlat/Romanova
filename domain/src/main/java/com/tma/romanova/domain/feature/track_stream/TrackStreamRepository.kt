@@ -11,10 +11,12 @@ interface TrackStreamRepository {
         const val TIME_BACK_MS = 15000
     }
 
+    val playingEvent: Flow<PlayingEvent>
     val currentTrackPlayTime: StreamActionResult<Flow<Long>>
     val duration: StreamActionResult<Result<Long>>
+    val currentPlayingTrackId: StreamActionResult<Int>
 
-    fun prepareTrack(track: Track, withPlaying: Boolean): Flow<Result<Unit>>
+    fun preparePlaylist(track: Track, withPlaying: Boolean): Flow<Result<Unit>>
     fun playTrack(): StreamActionResult<Flow<Result<Unit>>>
     fun pauseTrack(): StreamActionResult<Flow<Result<Unit>>>
     fun moveToPosition(playedPercent: Float): StreamActionResult<Flow<Result<Long>>>
@@ -24,11 +26,15 @@ interface TrackStreamRepository {
 }
 
 sealed class StreamActionResult<out T>{
+
+    val initializedOrNull: T?
+    get() = (this as? IsInitialized)?.result
+
     object StreamNotInitialized: StreamActionResult<Nothing>()
     data class IsInitialized<T>(val result: T) : StreamActionResult<T>()
 }
 
-fun <T, R>StreamActionResult<T>.ifInitialized(action: T.() -> R) = when(this){
+fun <T, R>StreamActionResult<T>.ifInitialized(action: T.() -> R): StreamActionResult<R> = when(this){
     is StreamActionResult.IsInitialized -> StreamActionResult.IsInitialized(
         result = action.invoke(this.result)
     )

@@ -23,3 +23,13 @@ sealed class ResponseEvent : GetPlaylistEvent, GetTrackEvent, GetWaveFormEvent, 
             )
     }
 }
+
+inline fun <reified T : ResponseEvent, reified R : ResponseEvent> T.transform(transformation: (T) -> R): R =
+    when(this){
+        ResponseEvent.Loading -> ResponseEvent.Loading as R
+        ResponseEvent.DoNothing -> ResponseEvent.DoNothing as R
+        is ResponseEvent.Exception -> this as R
+        ResponseEvent.NetworkUnavailable -> ResponseEvent.NetworkUnavailable as R
+        is ResponseEvent.ServerError -> this as R
+        else -> transformation(this)
+    }

@@ -29,7 +29,7 @@ sealed interface PlayerIntent {
         val currentTrack: Track,
         val allTracks: List<Track>
     ) : PlayerIntent
-    data class LoadTrack(val trackId: Int): PlayerIntent
+    data class UpdateTrack(val trackId: Int): PlayerIntent
     object UpPlayingTime: PlayerIntent
     object DownPlayingTime: PlayerIntent
     object ShowWaveFormLoadingError: PlayerIntent

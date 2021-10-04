@@ -1,6 +1,8 @@
 package com.tma.romanova.domain.event
 
+import com.tma.romanova.domain.feature.playlist.entity.PlayingState
 import com.tma.romanova.domain.feature.playlist.entity.Track
+import com.tma.romanova.domain.feature.track_stream.PlayingEvent
 import com.tma.romanova.domain.intent.Intent
 import com.tma.romanova.domain.intent.PlayerIntent
 import com.tma.romanova.domain.intent.TouchStatus
@@ -41,6 +43,9 @@ sealed interface PlayerEvent {
     object TrackTimeUpError: PlayerEvent
     object TrackTimeBackError: PlayerEvent
     object TrackMoveToPositionError: PlayerEvent
+    object TrackEnded: PlayerEvent
+    data class NextTrackLoadingSuccess(val track: Track): PlayerEvent
+    data class NewTrackStarted(val trackId: Int): PlayerEvent
     data class TrackMoveToPositionSuccess(
         val newPositionMs: Long
     ): PlayerEvent
@@ -53,8 +58,30 @@ fun PlayerEvent.toIntent(state: PlayerState) = when(this){
         currentTrack = currentTrack,
         allTracks = allTracks
     )
-    Event.DoNothing -> Intent.DoNothing
-    is PlayerEvent.PageOpen -> PlayerIntent.LoadTrack(trackId = trackId)
+    is PlayerEvent.NextTrackLoadingSuccess -> {
+        if(state is PlayerState.TrackIsPlaying) {
+            PlayerIntent.ShowTrack(
+                currentTrack = track.copy(
+                    playingState = PlayingState.IsPlaying(
+                        currentPositionMs = 0L
+                    )
+                ),
+                allTracks = state.allTracks
+            )
+        }else Intent.DoNothing
+    }
+    PlayerEvent.TrackEnded -> Intent.DoNothing
+    is PlayerEvent.NewTrackStarted -> {
+        if(state is PlayerState.TrackIsPlaying && (
+                    state.desiredCurrentTrack == null ||
+                            state.desiredCurrentTrack.first.id == state.currentTrack.id)) {
+            PlayerIntent.NavigateToNextTrack(
+                trackId = trackId
+            )
+        }else Intent.DoNothing
+    }
+    Event.NothingHappened -> Intent.DoNothing
+    is PlayerEvent.PageOpen -> PlayerIntent.UpdateTrack(trackId = trackId)
     is PlayerEvent.NeedsChangeTimeLinePosition -> PlayerIntent.MoveWaveFormToPosition(
         playedPercent = newPosition,
         touchStatus = TouchStatus.IsNotTouch
@@ -93,9 +120,9 @@ fun PlayerEvent.toIntent(state: PlayerState) = when(this){
 val GetWaveFormEvent.playerEvent: PlayerEvent
 get() = when(this){
     GetWaveFormEvent.Error -> PlayerEvent.WaveFormLoadingError
-    ResponseEvent.DoNothing ->  Event.DoNothing
+    ResponseEvent.DoNothing ->  Event.NothingHappened
     is ResponseEvent.Exception -> PlayerEvent.WaveFormLoadingError
-    ResponseEvent.Loading -> Event.DoNothing
+    ResponseEvent.Loading -> Event.NothingHappened
     ResponseEvent.NetworkUnavailable -> PlayerEvent.WaveFormLoadingError
     is ResponseEvent.ServerError -> PlayerEvent.WaveFormLoadingError
     is GetWaveFormEvent.ValuesReceived -> PlayerEvent.WaveFormValuesReceived(
@@ -113,7 +140,7 @@ get() = when {
             )
         }
         first is GetTrackEvent.TrackNotFound ||
-                second is GetPlaylistEvent.PlaylistNotFound -> Event.DoNothing
+                second is GetPlaylistEvent.PlaylistNotFound -> Event.NothingHappened
         listOf(first, second).any {
             it is ResponseEvent.NetworkUnavailable
         } -> PlayerEvent.TrackLoadingError(
@@ -130,12 +157,12 @@ get() = when {
             errorCause = (first as ResponseEvent.Exception).errorCase
         )
         first is ResponseEvent.Loading -> PlayerEvent.TrackLoadingStart
-        else -> Event.DoNothing
+        else -> Event.NothingHappened
 }
 
 val PrepareTrackEvent.playerEvent: PlayerEvent
 get() = when(this){
-    Event.DoNothing -> Event.DoNothing
+    Event.NothingHappened -> Event.NothingHappened
     PrepareTrackEvent.PrepareCompleted -> PlayerEvent.PrepareTrackSuccess
     PrepareTrackEvent.PrepareStart -> PlayerEvent.PrepareTrackStart
     PrepareTrackEvent.PrepareStartWithPlaying -> PlayerEvent.PrepareTrackStartWithPlaying
@@ -144,37 +171,51 @@ get() = when(this){
 
 val PauseTrackEvent.playerEvent: PlayerEvent
     get() = when(this){
-        Event.DoNothing -> Event.DoNothing
+        Event.NothingHappened -> Event.NothingHappened
         PauseTrackEvent.TrackPaused -> PlayerEvent.TrackPaused
         PauseTrackEvent.PauseTrackError -> PlayerEvent.TrackPauseError
     }
 
 val ResumeTrackEvent.playerEvent: PlayerEvent
     get() = when(this){
-        Event.DoNothing -> Event.DoNothing
+        Event.NothingHappened -> Event.NothingHappened
         ResumeTrackEvent.TrackResumed -> PlayerEvent.TrackResumed
         ResumeTrackEvent.ResumeTrackError -> PlayerEvent.TrackResumeError
     }
 
 val MoveTimeUpTrackEvent.playerEvent: PlayerEvent
     get() = when(this){
-        Event.DoNothing -> Event.DoNothing
+        Event.NothingHappened -> Event.NothingHappened
         MoveTimeUpTrackEvent.MoveTimeUpTrackError -> PlayerEvent.TrackTimeUpError
         MoveTimeUpTrackEvent.MoveTimeUpSuccess -> PlayerEvent.TrackTimeUpSuccess
     }
 
 val MoveTimeBackTrackEvent.playerEvent: PlayerEvent
     get() = when(this){
-        Event.DoNothing -> Event.DoNothing
+        Event.NothingHappened -> Event.NothingHappened
         MoveTimeBackTrackEvent.MoveTimeBackTrackError -> PlayerEvent.TrackTimeBackError
         MoveTimeBackTrackEvent.MoveTimeBackSuccess -> PlayerEvent.TrackTimeBackSuccess
     }
 
 val MoveToPositionTrackEvent.playerEvent: PlayerEvent
     get() = when(this){
-        Event.DoNothing -> Event.DoNothing
+        Event.NothingHappened -> Event.NothingHappened
         MoveToPositionTrackEvent.MoveToPositionTrackError -> PlayerEvent.TrackMoveToPositionError
         is MoveToPositionTrackEvent.MoveToPositionTrackSuccess -> PlayerEvent.TrackMoveToPositionSuccess(
             newPositionMs = newPositionMs
         )
     }
+
+val PlayingEvent.playerEvent: PlayerEvent
+get() = when(this){
+    PlayingEvent.TrackEnd -> PlayerEvent.TrackEnded
+    is PlayingEvent.TrackPlayingStart -> PlayerEvent.NewTrackStarted(trackId = trackId)
+}
+
+val GetNowPlayingTrackEvent.playerEvent: PlayerEvent
+get() = when(this){
+    is GetNowPlayingTrackEvent.NowPlayingTrackFound -> PlayerEvent.NextTrackLoadingSuccess(
+        track = track
+    )
+    else -> Event.NothingHappened
+}

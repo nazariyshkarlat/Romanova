@@ -9,7 +9,7 @@ sealed interface MoveTimeUpTrackEvent {
 
 val Result<Unit>.moveTimeUpTrackEvent: MoveTimeUpTrackEvent
     get() = when(this){
-        Result.CacheIsEmpty -> Event.DoNothing
+        Result.CacheIsEmpty -> Event.NothingHappened
         is Result.LocalException -> MoveTimeUpTrackEvent.MoveTimeUpTrackError
         Result.NetworkError -> MoveTimeUpTrackEvent.MoveTimeUpTrackError
         is Result.ServerError -> MoveTimeUpTrackEvent.MoveTimeUpTrackError

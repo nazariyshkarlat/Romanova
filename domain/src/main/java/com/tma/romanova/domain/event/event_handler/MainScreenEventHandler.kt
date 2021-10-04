@@ -8,5 +8,5 @@ import com.tma.romanova.domain.state.feature.main_screen.MainScreenState
 
 fun MainScreenEventHandler() =
     EventHandler<MainScreenState, MainScreenIntent, MainScreenClientEvent>{ currentState, intent->
-        Event.DoNothing
+        Event.NothingHappened
     }

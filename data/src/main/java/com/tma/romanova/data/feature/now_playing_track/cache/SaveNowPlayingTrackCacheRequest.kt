@@ -17,7 +17,6 @@ class SaveNowPlayingTrackCacheRequest(private val track: Track) : BaseCacheReque
     override val cacheStorage: CacheStorage<Track> by inject(qualifier = nowPlayingTrackCacheStorageQualifier)
 
     override suspend fun makeRequest(): CacheResult<Track> {
-        println("save")
         return cacheStorage.setSingleElement(
             data = track,
             id = track.id.toString()

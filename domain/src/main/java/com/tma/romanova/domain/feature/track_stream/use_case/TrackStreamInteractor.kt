@@ -1,19 +1,56 @@
 package com.tma.romanova.domain.feature.track_stream.use_case
 
 import com.tma.romanova.domain.event.*
+import com.tma.romanova.domain.extensions.atIndexOrFirst
+import com.tma.romanova.domain.extensions.onEachAfter
+import com.tma.romanova.domain.feature.now_playing_track.NowPlayingTrackRepository
+import com.tma.romanova.domain.feature.playlist.PlaylistRepository
 import com.tma.romanova.domain.feature.playlist.entity.Track
+import com.tma.romanova.domain.feature.playlist.use_case.PlaylistInteractor
+import com.tma.romanova.domain.feature.track_stream.PlayingEvent
 import com.tma.romanova.domain.feature.track_stream.StreamActionResult
 import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository
 import com.tma.romanova.domain.feature.track_stream.ifInitialized
 import com.tma.romanova.domain.result.Result
+import kotlin.collections.*
 import kotlinx.coroutines.flow.*
 
 class TrackStreamInteractorImpl(
-    private val trackStreamRepository: TrackStreamRepository
+    private val trackStreamRepository: TrackStreamRepository,
+    private val playlistRepository: PlaylistRepository,
+    private val nowPlayingTrackRepository: NowPlayingTrackRepository
     ) : TrackStreamInteractor{
-    override val currentTrackPlayTime: StreamActionResult<Flow<Long>> by lazy {
-        trackStreamRepository.currentTrackPlayTime
+    override val currentTrackPlayTime: StreamActionResult<Flow<Long>>
+    get() = trackStreamRepository.currentTrackPlayTime
+
+    private var currentPlayingTrack: Track? = null
+
+    override val currentPlayingTrackId: StreamActionResult<Int>
+        get() = trackStreamRepository.currentPlayingTrackId
+
+    private suspend fun playlistTracks(): List<Track>{
+       return (playlistRepository.getPlaylist() as? Result.Success)?.data?.tracks
+            ?: emptyList()
     }
+
+    override val playingEvent: Flow<PlayingEvent>
+    get() = trackStreamRepository.playingEvent
+        .onEachAfter {
+            when(it){
+                PlayingEvent.TrackEnd -> {
+                    val tracks = playlistTracks()
+                    tracks.indexOfFirst { it.id == currentPlayingTrack?.id }
+                        .takeIf { it != -1 }
+                        ?.let {
+                            prepareTrack(
+                                tracks.atIndexOrFirst(it+1),
+                                withPlaying = true
+                            ).collect()
+                        }
+                }
+                else -> Unit
+            }
+        }
 
     override val durationMs: StreamActionResult<Long?>
         get() = trackStreamRepository.duration.ifInitialized {
@@ -32,13 +69,18 @@ class TrackStreamInteractorImpl(
                 if(withPlaying) PrepareTrackEvent.PrepareStartWithPlaying
                 else PrepareTrackEvent.PrepareStart
             )
-            trackStreamRepository.prepareTrack(
+            trackStreamRepository.preparePlaylist(
                 track = track,
                 withPlaying = withPlaying
             ).collect {
+                if(it is Result.Success){
+                    nowPlayingTrackRepository.saveNowPlayingTrack(track = track)
+                }
                 emit(it.prepareTrackEvent)
             }
-    }
+    }.also {
+            currentPlayingTrack = track
+        }
 
     override fun playTrack()=
         trackStreamRepository.playTrack().ifInitialized {
@@ -74,6 +116,8 @@ class TrackStreamInteractorImpl(
 interface TrackStreamInteractor {
     val currentTrackPlayTime: StreamActionResult<Flow<Long>>
     val durationMs: StreamActionResult<Long?>
+    val playingEvent: Flow<PlayingEvent>
+    val currentPlayingTrackId: StreamActionResult<Int>
 
     fun prepareTrack(track: Track, withPlaying: Boolean): Flow<PrepareTrackEvent>
     fun playTrack(): StreamActionResult<Flow<ResumeTrackEvent>>

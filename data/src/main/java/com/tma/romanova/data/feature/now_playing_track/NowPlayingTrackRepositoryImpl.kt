@@ -32,7 +32,6 @@ class NowPlayingTrackRepositoryImpl(
     }
 
     override suspend fun saveNowPlayingTrack(track: Track) {
-        println("Save1")
         when(nowPlayingTrackDataStoreProvider.sourceType){
             DataSourceType.Cache -> {
                 nowPlayingTrackDataStore.saveToCache(

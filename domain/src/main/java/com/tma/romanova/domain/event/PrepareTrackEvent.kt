@@ -11,7 +11,7 @@ sealed interface PrepareTrackEvent {
 
 val Result<Unit>.prepareTrackEvent: PrepareTrackEvent
 get() = when(this){
-    Result.CacheIsEmpty -> Event.DoNothing
+    Result.CacheIsEmpty -> Event.NothingHappened
     is Result.LocalException -> PrepareTrackEvent.PrepareTrackError
     Result.NetworkError -> PrepareTrackEvent.PrepareTrackError
     is Result.ServerError -> PrepareTrackEvent.PrepareTrackError

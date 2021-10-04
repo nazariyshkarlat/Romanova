@@ -234,7 +234,6 @@ private class PagerState {
 
         val snapTo = if(isInitialSnap && hasInfinitePages) (itemSpacing+itemDimension)*(initialIndex+1) else snapOffset
 
-        println(snapTo)
         dragOffset.snapTo(
             snapTo
         )
@@ -270,8 +269,6 @@ private class PagerState {
             animationSpec = animationSpec,
             targetValue = targetOffset
         )
-
-        println(targetOffset)
 
         updateIndex(targetOffset)
     }

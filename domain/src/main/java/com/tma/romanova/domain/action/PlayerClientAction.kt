@@ -48,7 +48,7 @@ fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
                     playerState.allTracks.indexOfFirst {
                         it.id == playerState.currentTrack.id
                     }+1
-                ).id
+                ).id.also { println(it) }
             )
         }else Intent.DoNothing
     }
@@ -114,7 +114,7 @@ fun PlayerClientAction.toIntent(playerState: PlayerState) = when(this) {
     )
     is PlayerClientAction.OnTrackImageScrolled -> {
         if(playerState is PlayerState.TrackIsPlaying) {
-            PlayerIntent.LoadTrack(
+            PlayerIntent.UpdateTrack(
                 trackId = playerState.allTracks[newTrackPosition].id
             )
         }else Intent.DoNothing

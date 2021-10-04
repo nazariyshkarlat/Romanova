@@ -12,6 +12,7 @@ import com.tma.romanova.data.feature.playlist.data_store.PlaylistDataStore
 import com.tma.romanova.data.feature.playlist.data_store.PlaylistDataStoreProvider
 import com.tma.romanova.data.feature.track_stream.data_source.StreamDataSourceProvider
 import com.tma.romanova.data.feature.track_stream.TrackStreamRepositoryImpl
+import com.tma.romanova.domain.feature.playlist.entity.Track
 import com.tma.romanova.domain.feature.playlist.use_case.TrackInteractor
 import com.tma.romanova.domain.feature.playlist.use_case.TrackInteractorImpl
 import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository
@@ -39,7 +40,9 @@ val playerModule = module{
 
     single {
         TrackStreamInteractorImpl(
-            get()
+            trackStreamRepository = get(),
+            nowPlayingTrackRepository = get(),
+            playlistRepository = get()
         )
     } bind TrackStreamInteractor::class
 

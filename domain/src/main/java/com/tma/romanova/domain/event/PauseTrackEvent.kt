@@ -9,7 +9,7 @@ sealed interface PauseTrackEvent {
 
 val Result<Unit>.pauseTrackEvent: PauseTrackEvent
     get() = when(this){
-        Result.CacheIsEmpty -> Event.DoNothing
+        Result.CacheIsEmpty -> Event.NothingHappened
         is Result.LocalException -> PauseTrackEvent.PauseTrackError
         Result.NetworkError -> PauseTrackEvent.PauseTrackError
         is Result.ServerError -> PauseTrackEvent.PauseTrackError

@@ -3,8 +3,7 @@ package com.tma.romanova.data.feature.track_stream
 import com.tma.romanova.data.data_source.DataSourceProvider
 import com.tma.romanova.data.feature.track_stream.data_source.StreamDataSourceImpl
 import com.tma.romanova.domain.feature.playlist.entity.Track
-import com.tma.romanova.domain.feature.track_stream.StreamActionResult
-import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository
+import com.tma.romanova.domain.feature.track_stream.*
 import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository.Companion.TIME_BACK_MS
 import com.tma.romanova.domain.feature.track_stream.TrackStreamRepository.Companion.TIME_UP_MS
 import com.tma.romanova.domain.result.DataSourceType
@@ -19,26 +18,31 @@ class TrackStreamRepositoryImpl(
     private val httpClient: HttpClient
 ): TrackStreamRepository {
 
+    override val playingEvent: Flow<PlayingEvent>
+    get() = streamPlayingEvent.flowOn(Dispatchers.Main)
+
+    override val currentPlayingTrackId: StreamActionResult<Int>
+        get() = stream.ifInitialized { trackId }
+
     private var stream: Stream? = null
 
-    override val currentTrackPlayTime: StreamActionResult<Flow<Long>> by lazy{
-        stream.ifInitialized { currentPlayMsTimeFlow.flowOn(Dispatchers.Main) }
-    }
+    override val currentTrackPlayTime: StreamActionResult<Flow<Long>>
+    get() = stream.ifInitialized { currentPlayMsTimeFlow.flowOn(Dispatchers.Main) }
 
     override val duration: StreamActionResult<Result<Long>>
-    get() = stream.ifInitialized{
-        durationMs }
+    get() = stream.ifInitialized{ durationMs }
 
-    override fun prepareTrack(track: Track, withPlaying: Boolean) =
+    override fun preparePlaylist(track: Track, withPlaying: Boolean) =
         flow {
             val result: Result<Stream> = when (dataSourceProvider.sourceType) {
                 DataSourceType.Cache -> TODO()
                 DataSourceType.Network -> {
                     StreamDataSourceImpl(
-                            requestUrl = track.streamUrl,
-                            httpClient = httpClient,
-                            dataSourceProvider = dataSourceProvider
-                        ).getStream()
+                        requestUrl = track.streamUrl,
+                        trackId = track.id,
+                        httpClient = httpClient,
+                        dataSourceProvider = dataSourceProvider
+                    ).getStream()
                 }
                 DataSourceType.Memory -> TODO()
             }

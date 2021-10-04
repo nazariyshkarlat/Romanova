@@ -1,31 +1,53 @@
 package com.tma.romanova.data.feature.track_stream.network
 
-import android.os.Looper
 import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.analytics.PlaybackStats
 import com.tma.romanova.core.application
-import com.tma.romanova.data.feature.track_stream.Stream
+import com.tma.romanova.domain.feature.track_stream.PlayingEvent
+import com.tma.romanova.domain.feature.track_stream.Stream
+import com.tma.romanova.domain.feature.track_stream._playingEvent
 import com.tma.romanova.domain.result.DataSourceType
 import com.tma.romanova.domain.result.Result
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.flowOn
-import java.lang.Exception
 import kotlin.coroutines.CoroutineContext
 
 private var mediaPlayer: ExoPlayer? = null
 
 class NetworkStream(
-    private val url: String
-    ): Stream {
+    private val url: String,
+    override val trackId: Int
+    ): Stream(trackId) {
 
     companion object{
         const val PREPARE_RETRY_COUNT = 3
+    }
+
+    private var listener: Player.Listener = object : Player.Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            super.onPlaybackStateChanged(playbackState)
+            when(playbackState){
+
+                Player.STATE_BUFFERING -> {
+
+                }
+                Player.STATE_ENDED -> {
+                    _playingEvent.tryEmit(
+                        PlayingEvent.TrackEnd
+                    )
+                }
+                Player.STATE_IDLE -> {
+
+                }
+                Player.STATE_READY -> {
+
+                }
+            }
+        }
     }
 
     private var channelScope: ProducerScope<Long>? = null
@@ -87,26 +109,24 @@ class NetworkStream(
             actionsScope?.cancel()
             actionsScope = this.coroutineContext
 
-            val listener: Player.Listener
-
-            val mediaPlayerWasUninitialized = mediaPlayer == null
-
             if(mediaPlayer == null) {
                 mediaPlayer = SimpleExoPlayer.Builder(application).build()
             }
 
-            mediaPlayer!!.also {
+            mediaPlayer!!.also { player ->
 
-                listener = object : Player.Listener {
+                player.addListener(listener)
+
+                val prepareListener = object : Player.Listener {
 
                     var retryCount = PREPARE_RETRY_COUNT
 
                     override fun onPlayerError(error: PlaybackException) {
                         super.onPlayerError(error)
                         if (retryCount > 0) {
-                            it.seekTo(0, 0)
-                            it.prepare()
-                        }else {
+                            player.seekTo(0, 0)
+                            player.prepare()
+                        } else {
                             this@callbackFlow.trySend(
                                 Result.NetworkError
                             )
@@ -117,36 +137,44 @@ class NetworkStream(
 
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         super.onPlaybackStateChanged(playbackState)
-                        when(playbackState){
+                        when (playbackState) {
                             Player.STATE_BUFFERING -> {
 
                             }
                             Player.STATE_ENDED -> {
-
                             }
                             Player.STATE_IDLE -> {
 
                             }
                             Player.STATE_READY -> {
+                                _playingEvent.tryEmit(
+                                    PlayingEvent.TrackPlayingStart(
+                                        trackId = trackId
+                                    )
+                                )
                                 this@callbackFlow.trySend(
-                                    Result.Success(data = Unit, dataSourceType = DataSourceType.Network)
+                                    Result.Success(
+                                        data = Unit,
+                                        dataSourceType = DataSourceType.Network
+                                    )
                                 )
                                 close()
                             }
                         }
                     }
-                }
+                }.also { listener->
 
-                it.playWhenReady = playWhenPrepared
-                it.addListener(listener)
-                it.clearMediaItems()
-                val mediaItem = MediaItem.fromUri(url)
-                it.setMediaItem(mediaItem)
-                it.seekTo(0, 0)
-                it.prepare()
-            }
-            awaitClose {
-                mediaPlayer?.removeListener(listener)
+                    player.playWhenReady = playWhenPrepared
+                    player.addListener(listener)
+                    player.clearMediaItems()
+                    val mediaItem = MediaItem.fromUri(url)
+                    player.setMediaItem(mediaItem)
+                    player.seekTo(0, 0)
+                    player.prepare()
+                }
+                awaitClose {
+                    mediaPlayer?.removeListener(prepareListener)
+                }
             }
         }.flowOn(Dispatchers.Main)
     }
@@ -259,5 +287,8 @@ class NetworkStream(
         channelScope?.cancel()
         actionsScope?.cancel()
         mediaPlayer?.stop()
+        try{
+            listener.let { mediaPlayer?.removeListener(it) }
+        }catch (e: Exception){}
     }
 }

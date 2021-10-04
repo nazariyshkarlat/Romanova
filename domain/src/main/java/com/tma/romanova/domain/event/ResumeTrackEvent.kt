@@ -9,7 +9,7 @@ sealed interface ResumeTrackEvent {
 
 val Result<Unit>.resumeTrackEvent: ResumeTrackEvent
     get() = when(this){
-        Result.CacheIsEmpty -> Event.DoNothing
+        Result.CacheIsEmpty -> Event.NothingHappened
         is Result.LocalException -> ResumeTrackEvent.ResumeTrackError
         Result.NetworkError -> ResumeTrackEvent.ResumeTrackError
         is Result.ServerError -> ResumeTrackEvent.ResumeTrackError

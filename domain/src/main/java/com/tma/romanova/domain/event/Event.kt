@@ -12,6 +12,6 @@ sealed class Event :
     MoveTimeUpTrackEvent,
     MoveToPositionTrackEvent{
 
-    object DoNothing : Event()
+    object NothingHappened : Event()
 
 }
